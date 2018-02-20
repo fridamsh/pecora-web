@@ -10,6 +10,7 @@
 </head>
 <body style="background-color: #009688;">
 	<div class="div-login">
+		<h2>Pecora</h2>
 		<!-- <?php
 			if (isset($_SESSION['u_id'])) {
 				echo '';
