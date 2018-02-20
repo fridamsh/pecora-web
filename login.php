@@ -8,7 +8,7 @@
 	<title>Pecora Web</title>
 	<link rel="stylesheet" type="text/css" href="style.css">
 </head>
-<body style="background-color: #009688;">
+<body>
 	<div class="div-login">
 		<h2>Pecora</h2>
 		<!-- <?php
@@ -18,7 +18,7 @@
 				echo '';
 			}
 		?> -->
-		<form>
+		<form class="login-form" action="includes/login.inc.php" method="POST">
 			<input type="text" name="uid" placeholder="Username">
 			<input type="password" name="pwd" placeholder="Password">
 			<button type="submit" name="submit">Logg inn</button>
