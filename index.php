@@ -1,5 +1,6 @@
 <?php
 	session_start();
+	include_once 'includes/dbh.inc.php';
 ?>
 
 <!DOCTYPE html>
@@ -26,7 +27,7 @@
 	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 
 	<!-- Custom fonts for this template -->
-    <link href="vendor/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+    <link href="font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
 
 	<style>
 		#mapwrap {
@@ -49,6 +50,33 @@
 			exit();
 		}
 	?>
+
+	<?php
+		$sql = "SELECT * FROM hike WHERE localId=4;";
+		$result = mysqli_query($conn, $sql);
+		$resultCheck = mysqli_num_rows($result);
+
+		if ($resultCheck > 0) {
+			while ($row = mysqli_fetch_assoc($result)) {
+				$title = $row['title'];
+				$observationPoints = $row['observationPoints'];
+				$track = $row['track'];
+			}
+		}
+
+		$json_obs_point = json_decode($observationPoints);
+		// Må hente ut json-objektet som ligger på posisjon 0 i arrayet
+		//echo $json_obs_point[0]->timeOfObservationPoint . "<br><br>";
+		
+		$json_track = json_decode($track);
+		
+		$track_points = array();
+		foreach ($json_track as $key => $value) {
+			array_push($track_points, array($value->mLatitude, $value->mLongitude));
+		}
+
+	?>
+
 	<div id="mapwrap">
 		<div id="map"></div>
 		<div class="leaflet-control-main-menu-button" title="Menu"></div>
@@ -64,19 +92,32 @@
 	L.tileLayer('http://opencache.statkart.no/gatekeeper/gk/gk.open_gmaps?layers=topo2&zoom={z}&x={x}&y={y}', {
         attribution: '<a href="http://www.kartverket.no/">Kartverket</a>'
     }).addTo(mymap);
-	var marker = L.marker([63.416957, 10.402937]).addTo(mymap);
-	marker.bindPopup("Hello!").openPopup();
 
-	var pointA = new L.LatLng(63.416898, 10.402840);
-	var pointB = new L.LatLng(63.424502, 10.414083);
-	var pointList = [pointA, pointB];
-
-	var firstpolyline = new L.Polyline(pointList, {
-	    color: 'blue',
-	    weight: 3,
+	// Initialize point list
+	var pointList = [];
+	// Get track points from php-variable
+	var jArray= <?php echo json_encode($track_points); ?>;
+	// Go through each point and add latitude and longitude as a point to the list
+	for (var i = 0; i < jArray.length; i++) {
+		var res = jArray[i].toString().split(',');
+		var latitude = Number(res[0]);
+		var longitude = Number(res[1]);
+		var point = new L.LatLng(latitude, longitude);
+		pointList.push(point);
+    }
+    // Make polyline with the point list
+	var trackPolyline = new L.Polyline(pointList, {
+	    color: 'red',
+	    weight: 4,
 	    opacity: 0.8,
 	    smoothFactor: 1
-	});
-	firstpolyline.addTo(mymap);
+	}).bindPopup('<?= $title ?>');
+	/*trackPolyline.on('click', function(e) {
+		var marker = L.marker([63.416957, 10.402937]).addTo(mymap);
+		marker.bindPopup("Tur: <?= $title ?>").openPopup();
+	});*/
+	// Add the polyline to the map
+	trackPolyline.addTo(mymap);
+	mymap.fitBounds(trackPolyline.getBounds());
 </script>
 </html>
