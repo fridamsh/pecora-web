@@ -74,6 +74,10 @@
 	<?php
 		if (isset($_SESSION['u_id'])) {
 			$userId = $_SESSION['u_id'];
+			$userFirst = $_SESSION['u_first'];
+			$userLast = $_SESSION['u_last'];
+			$userEmail = $_SESSION['u_email'];
+			$userUid = $_SESSION['u_uid'];
 		} else {
 			header("Location: login.php");
 			exit();
@@ -84,23 +88,21 @@
 		$sql = "SELECT * FROM hike WHERE userId=$userId AND startdate=(SELECT MAX(startdate) FROM hike WHERE userId=$userId);";
 		$result = mysqli_query($conn, $sql);
 		$resultCheck = mysqli_num_rows($result);
-
+		$title = "";
+		$track_points = array();
 		if ($resultCheck > 0) {
 			while ($row = mysqli_fetch_assoc($result)) {
 				$title = $row['title'];
 				$observationPoints = $row['observationPoints'];
 				$track = $row['track'];
 			}
+			$json_obs_point = json_decode($observationPoints);
+			$json_track = json_decode($track);
+			
+			foreach ($json_track as $key => $value) {
+				array_push($track_points, array($value->mLatitude, $value->mLongitude));
+			}
 		}
-
-		$json_obs_point = json_decode($observationPoints);
-
-		$json_track = json_decode($track);
-		$track_points = array();
-		foreach ($json_track as $key => $value) {
-			array_push($track_points, array($value->mLatitude, $value->mLongitude));
-		}
-
 	?>
 
 	<div id="mapwrap">
@@ -131,9 +133,9 @@
 	            <div class="sidebar-pane" id="profile">
 	                <h1 class="sidebar-header">Profil<span class="sidebar-close"><i class="fa fa-caret-left"></i></span></h1>
 
-	                <p>Navn: Frida Schmidt-Hanssen</p>
-	                <p>E-mail: fshanssen@gmail.com</p>
-	                <p>Passord: *******</p>
+	                <p>Navn: <?= $userFirst, " ", $userLast ?></p>
+	                <p>E-mail: <?= $userEmail ?></p>
+	                <p>Brukernavn: <?= $userUid ?></p>
 	                <div class="logout-div">
 						<form action="includes/logout.inc.php" method="POST">
 							<button type="submit" name="submit" class="btn btn-primary">Logg ut</button>
@@ -150,11 +152,7 @@
 	    </div>
 
 		<div id="map" class="sidebar-map"></div>
-		<!-- <div class="leaflet-top leaflet-right">
-			<form action="includes/logout.inc.php" method="POST">
-				<button type="submit" name="submit" class="leaflet-control btn btn-primary">Logg ut</button>
-			</form>
-		</div> -->
+
 	</div>
 </body>
 <script>
@@ -168,27 +166,28 @@
 	/*var marker = L.marker([63.416957, 10.402937]).addTo(mymap);
 	marker.bindPopup("Tur: <?= $title ?>").openPopup();*/
 
-	// Initialize point list
 	var pointList = [];
-	// Get track points from php-variable
 	var jArray= <?php echo json_encode($track_points); ?>;
-	// Go through each point and add latitude and longitude as a point to the list
-	for (var i = 0; i < jArray.length; i++) {
-		var res = jArray[i].toString().split(',');
-		var latitude = Number(res[0]);
-		var longitude = Number(res[1]);
-		var point = new L.LatLng(latitude, longitude);
-		pointList.push(point);
+	// Check if track points is empty or not
+	if (jArray.length > 0) {
+		for (var i = 0; i < jArray.length; i++) {
+			var res = jArray[i].toString().split(',');
+			var latitude = Number(res[0]);
+			var longitude = Number(res[1]);
+			var point = new L.LatLng(latitude, longitude);
+			pointList.push(point);
+		}
+
+		var trackPolyline = new L.Polyline(pointList, {
+		    color: 'red',
+		    weight: 4,
+		    opacity: 0.8,
+		    smoothFactor: 1
+		}).bindPopup('<?= $title ?>');
+
+		trackPolyline.addTo(mymap);
+		mymap.fitBounds(trackPolyline.getBounds());
 	}
-	// Make polyline with the point list
-	var trackPolyline = new L.Polyline(pointList, {
-	    color: 'red',
-	    weight: 4,
-	    opacity: 0.8,
-	    smoothFactor: 1
-	}).bindPopup('<?= $title ?>');
-	// Add the polyline to the map
-	trackPolyline.addTo(mymap);
-	mymap.fitBounds(trackPolyline.getBounds());
+	
 </script>
 </html>
