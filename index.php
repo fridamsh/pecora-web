@@ -1,7 +1,6 @@
 <?php
 	session_start();
 	include_once 'includes/dbh.inc.php';
-	include 'models/Hike.php';
 ?>
 
 <!DOCTYPE html>
@@ -28,7 +27,6 @@
 	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 
 	<!-- Custom fonts for this template -->
-    <!--<link href="font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">-->
     <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
 
     <!-- Sidebar -->
@@ -37,7 +35,6 @@
 
     <!-- Date format -->
     <script src="js/Date.js"></script>
-    <!--<script src="js/getMostRecentHike.js"></script>-->
 
 	<style>
 		body {
@@ -50,6 +47,10 @@
         }
         p {
         	color: #000;
+        	line-height: 30px;
+        	font-size: 11pt;
+        }
+        #dates a {
         	line-height: 30px;
         	font-size: 11pt;
         }
@@ -92,13 +93,9 @@
 	            <ul role="tablist">
 	                <li><a href="#home" role="tab"><i class="fa fa-bars"></i></a></li>
 	                <li><a href="#profile" role="tab"><i class="fa fa-user"></i></a></li>
-	                <li><a href="#dates" role="tab"><i class="fa fa-calendar"></i></a></li>
+	                <li><a id="dateLink" href="#dates" role="tab"><i class="fa fa-calendar"></i></a></li>
 	                <li><a href="#settings" role="tab"><i class="fa fa-gear"></i></a></li>
 	            </ul>
-
-	            <!--<ul role="tablist">
-	                <li><a href="#settings" role="tab"><i class="fa fa-gear"></i></a></li>
-	            </ul>-->
 	        </div>
 
 	        <!-- Tab panes -->
@@ -126,17 +123,13 @@
 	            </div>
 
 	            <div class="sidebar-pane" id="dates">
-	                <h1 class="sidebar-header">Datoer<span class="sidebar-close"><i class="fa fa-caret-left"></i></span></h1>
-
-	                <a>Tur tirsdag morgen 24/02/2018 12:50</a>
-	                <a>Tur søndag ettermiddag 27/02/2018 13:40</a>
-	                
+	                <h1 class="sidebar-header">Datoer<span class="sidebar-close"><i class="fa fa-caret-left"></i></span></h1>	                
 	            </div>
 
 	            <div class="sidebar-pane" id="settings">
 	                <h1 class="sidebar-header">Innstillinger<span class="sidebar-close"><i class="fa fa-caret-left"></i></span></h1>
 
-	                <p>Trenger jeg innstillinger?</p>
+	                <p>Hva kan være her?</p>
 	            </div>
 	        </div>
 	    </div>
@@ -151,6 +144,8 @@
 	L.tileLayer('http://opencache.statkart.no/gatekeeper/gk/gk.open_gmaps?layers=topo2&zoom={z}&x={x}&y={y}', {
 	    attribution: '<a href="http://www.kartverket.no/">Kartverket</a> | <a href="http://www.ingridogsondre.no" target="_blank">Frida</a>'
 	}).addTo(mymap);
+
+	var overlays = {};
 
 	var sidebar = L.control.sidebar('sidebar').addTo(mymap);
 
@@ -199,30 +194,7 @@
 				    shadowSize: [20, 20],
 				    shadowAnchor: [7, 11]
 				});
-
-		    	//Decode track
-		    	trackPointList = [];
-		    	var jsonTrack = JSON.parse(track);
-		    	for (var i = 0; i < jsonTrack.length; i++) {
-		    		var latitude = Number(jsonTrack[i].mLatitude);
-					var longitude = Number(jsonTrack[i].mLongitude);
-					var point = new L.LatLng(latitude, longitude);
-					trackPointList.push(point);
-		    	}
-		    	var marker = L.marker(trackPointList[0], {icon: startIcon}).addTo(mymap);
-				marker.bindPopup("<b>Start</b> "+dateStart.format("HH:MM"));
-				var marker = L.marker(trackPointList[trackPointList.length-1], {icon: stopIcon}).addTo(mymap);
-				marker.bindPopup("<b>Slutt</b> "+dateEnd.format("HH:MM"));
-
-		    	var trackPolyline = new L.Polyline(trackPointList, {
-				    color: 'red',
-				    weight: 4,
-				    opacity: 0.8,
-				    smoothFactor: 1
-				}).bindPopup('<b>'+title+'</b><br>'+dateStart.format("dd/mm/yyyy HH:MM")+'-'+dateEnd.format('HH:MM')+'<br><b>Gjeter:</b> '+name+'<br><b>Deltakere:</b> '+participants+'<br><b>Vær:</b> '+weather+'<br><b>Detaljer:</b> '+description+'<br><b>Distanse:</b> '+distance+'<br><b>Antall sau sett:</b> '+3);
-
-				trackPolyline.addTo(mymap);
-				mymap.fitBounds(trackPolyline.getBounds());
+				mapItems = [];
 
 				var redIcon = L.icon({
 				    iconUrl: 'img/marker-icon-2x-red-2.png',
@@ -245,21 +217,24 @@
 
 				//Decode observation points
 				var jsonObservationPoints = JSON.parse(observationPoints);
-				//alert(jsonObservationPoints);
+				var totalSheepCount=0;
 				for (var i = 0; i < jsonObservationPoints.length; i++) {
 					var latitude = Number(jsonObservationPoints[i].locationPoint.mLatitude);
 					var longitude = Number(jsonObservationPoints[i].locationPoint.mLongitude);
 					var pointParent = new L.LatLng(latitude, longitude);
 					var date = new Date(Number(jsonObservationPoints[i].timeOfObservationPoint));
-					var marker = L.marker(pointParent, {icon: redIcon}).addTo(mymap);
+					var marker = L.marker(pointParent, {icon: redIcon});
 					marker.bindPopup("<b>Observasjonspunkt "+jsonObservationPoints[i].pointId+"</b><br>Kl. "+date.format("HH:MM")+"<br>Sau sett: "+jsonObservationPoints[i].sheepCount);
+					mapItems.push(marker);
+					totalSheepCount+=Number(jsonObservationPoints[i].sheepCount);
 					//Decode observations
 					var observationList = jsonObservationPoints[i].observationList;
 					for (var j = 0; j < observationList.length; j++) {
 						var latitude = Number(observationList[j].locationObservation.mLatitude);
 						var longitude = Number(observationList[j].locationObservation.mLongitude);
 						var pointChild = new L.LatLng(latitude, longitude);
-						var marker = L.marker(pointChild, {icon: blueIcon}).addTo(mymap);
+						var marker = L.marker(pointChild, {icon: blueIcon});
+						mapItems.push(marker);
 						marker.bindPopup("<b>Observasjon "+observationList[j].observationId+"</b><br>Type: "+observationList[j].typeOfObservation+"<br>Antall: "+observationList[j].sheepCount);
 						// Add polyline between observation point and observation
 						var line = new L.Polyline([pointParent,pointChild], {
@@ -268,14 +243,68 @@
 						    opacity: 0.8,
 						    smoothFactor: 1
 						});
-						line.addTo(mymap);
+						mapItems.push(line);
 					}
 				}
+
+				//Decode track
+		    	trackPointList = [];
+		    	var jsonTrack = JSON.parse(track);
+		    	for (var i = 0; i < jsonTrack.length; i++) {
+		    		var latitude = Number(jsonTrack[i].mLatitude);
+					var longitude = Number(jsonTrack[i].mLongitude);
+					var point = new L.LatLng(latitude, longitude);
+					trackPointList.push(point);
+		    	}
+		    	
+		    	var markerStart = L.marker(trackPointList[0], {icon: startIcon});
+				markerStart.bindPopup("<b>Start</b> "+dateStart.format("HH:MM"));
+				mapItems.push(markerStart);
+				var markerEnd = L.marker(trackPointList[trackPointList.length-1], {icon: stopIcon});
+				markerEnd.bindPopup("<b>Slutt</b> "+dateEnd.format("HH:MM"));
+				mapItems.push(markerEnd);
+
+		    	var trackPolyline = new L.Polyline(trackPointList, {
+				    color: 'red',
+				    weight: 4,
+				    opacity: 0.8,
+				    smoothFactor: 1
+				}).bindPopup('<b>'+title+'</b><br>'+dateStart.format("dd/mm/yyyy HH:MM")+'-'+dateEnd.format('HH:MM')+'<br><b>Gjeter:</b> '+name+'<br><b>Deltakere:</b> '+participants+'<br><b>Antall sau sett:</b> '+totalSheepCount+'<br><b>Vær:</b> '+weather+'<br><b>Distanse:</b> '+distance+'<br><b>Detaljer:</b> '+description);
+				mapItems.push(trackPolyline);
+				mymap.fitBounds(trackPolyline.getBounds());
+
+				//Add all map items to the map
+				var layer = L.layerGroup(mapItems).addTo(mymap);
+				var key = "layer"+k;
+				overlays.key=layer;
+
+				//Add hikes to dates page
+				var newHTML = '<a>'+title+' '+dateStart.format("dd/mm/yyyy HH:MM")+'</a><br>';
+				$("#dates").append(newHTML);
 	    	}
     	}
     };
     oReq.open("get", "includes/get-data.inc.php", true);
     oReq.send();
+
+    /*$('#dateLink').on('click', function(e) {
+		e.preventDefault();
+		$.ajax({
+			url: "includes/get-data.inc.php",
+			type: "GET",//type of posting the data
+			success: function (data) {
+				//alert(data);
+				var a = document.createElement('a');
+				var linkText = document.createTextNode(user.appname);
+				a.appendChild(linkText);
+			},
+			error: function(xhr, ajaxOptions, thrownError){
+				alert("Error");
+			},
+			timeout: 15000//timeout of the ajax call
+		});
+
+	});*/
 
 </script>
 </html>
