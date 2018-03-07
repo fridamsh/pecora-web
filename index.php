@@ -85,80 +85,6 @@
 		}
 	?>
 
-	<?php
-		$sql = "SELECT * FROM hike WHERE userId=$userId AND startdate=(SELECT MAX(startdate) FROM hike WHERE userId=$userId);";
-		$result = mysqli_query($conn, $sql);
-		$resultCheck = mysqli_num_rows($result);
-		// Initialize variables in case there doesn't exist any hikes
-		$title = $name = $participants = $weather = $description = $distance = $startdate = $starttime = $endtime = $sheepCount = "";
-		$track_points = array();
-		$observation_points = array();
-		// Check if there exists a hike
-		if ($resultCheck > 0) {
-			while ($row = mysqli_fetch_assoc($result)) {
-				$title = $row['title'];
-				$name = $row['name'];
-				$participants = $row['participants'];
-				$weather = $row['weather'];
-				$description = $row['description'];
-				$startdate = $row['startdate'];
-				$endtime = $row['enddate'];
-				$distance = $row['distance'];
-				$observationPoints = $row['observationPoints'];
-				$track = $row['track'];
-			}
-			// Convert unix time to human readable date
-			$seconds = $startdate / 1000;
-			date_default_timezone_set('Europe/Oslo');
-			$startdate = date("d/m/Y", $seconds);
-			$starttime = date("H:i", $seconds);
-			$secondsEnd = $endtime / 1000;
-			$endtime = date("H:i", $secondsEnd);
-			
-			// Decode json objects
-			// Get relevant information from observationPoints
-			//$observation_list = array();
-			$json_obs_point = json_decode($observationPoints);
-			foreach ($json_obs_point as $key => $value) {
-				$obsLength = sizeof($value->observationList);
-				$observationPoint = array();
-				array_push($observationPoint, $value->locationPoint->mLatitude, $value->locationPoint->mLongitude, $value->pointId, $value->sheepCount, $value->timeOfObservationPoint);
-				// Loop through observationList and add to observationPoint
-				for ($i=0; $i < $obsLength; $i++) { 
-					array_push($observationPoint, $value->observationList[$i]->details, $value->observationList[$i]->locationObservation->mLatitude, $value->observationList[$i]->locationObservation->mLongitude, $value->observationList[$i]->observationId, $value->observationList[$i]->sheepCount, $value->observationList[$i]->typeOfObservation);
-				}
-				array_push($observation_points, $observationPoint);
-			}
-			// Get relevant information from track
-			$json_track = json_decode($track);
-			foreach ($json_track as $key => $value) {
-				array_push($track_points, array($value->mLatitude, $value->mLongitude));
-			}
-		}
-		$sql2 = "SELECT * FROM hike WHERE userId=$userId;";
-		$result2 = mysqli_query($conn, $sql2);
-		$resultCheck2 = mysqli_num_rows($result2);
-		$hikes = array();
-		if ($resultCheck2 > 0) {
-			while ($row = mysqli_fetch_assoc($result2)) {
-				$hike = new Hike();
-				$hike->set_title($row['title']);
-				$hike->set_name($row['name']);
-				$hike->set_participants($row['participants']);
-				$hike->set_weather($row['weather']);
-				$hike->set_description($row['description']);
-				$hike->set_startdate($row['startdate']);
-				$hike->set_enddate($row['enddate']);
-				$hike->set_mapfile($row['mapfile']);
-				$hike->set_observationPoints($row['observationPoints']);
-				$hike->set_track($row['track']);
-				$hike->set_userId($row['userId']);
-				$hike->set_localId($row['localId']);
-				array_push($hikes, $hike);
-			}
-		}
-	?>
-
 	<div id="mapwrap">
 		<div id="sidebar" class="sidebar collapsed">
 	        <!-- Nav tabs -->
@@ -202,8 +128,8 @@
 	            <div class="sidebar-pane" id="dates">
 	                <h1 class="sidebar-header">Datoer<span class="sidebar-close"><i class="fa fa-caret-left"></i></span></h1>
 
-	                <a><?= $hikes[1]->get_title(), " ", date("d/m/Y H:i", $hikes[1]->get_startdate()/1000), "<br>" ?></a>
-	                <a><?= $hikes[0]->get_title(), " ", date("d/m/Y H:i", $hikes[0]->get_startdate()/1000) ?></a>
+	                <a>Tur tirsdag morgen 24/02/2018 12:50</a>
+	                <a>Tur søndag ettermiddag 27/02/2018 13:40</a>
 	                
 	            </div>
 
@@ -228,19 +154,75 @@
 
 	var sidebar = L.control.sidebar('sidebar').addTo(mymap);
 
-	var pointList = [];
-	var jArray = <?php echo json_encode($track_points); ?>;
-	// Check if track points is empty or not
-	if (jArray.length > 0) {
-		var observationPointList = [];
-		var antallSau = 0;
-		var jArray2 = <?php echo json_encode($observation_points); ?>;
-		if (jArray2.length > 0) {
-			for (var i = 0; i < jArray2.length; i++) {
-				var res = jArray2[i].toString().split(',');
-				//alert(res);
-				pointListObsPoint = [];
-				antallSau += Number(res[3]);
+    function reqListener () {
+      console.log(this.responseText);
+    }
+
+    var oReq = new XMLHttpRequest(); //New request object
+    oReq.onload = function() {
+    	var obj = JSON.parse(this.responseText);
+    	if (obj == 'error') {
+    		alert("Ingen turer å vise");
+    	} else {
+    		for (var k = 0; k < obj.length; k++) {
+    			var title = obj[k].title;
+		    	var name = obj[k].name;
+		    	var participants = obj[k].participants;
+		    	var weather = obj[k].weather;
+		    	var description = obj[k].description;
+		    	var startdate = obj[k].startdate;
+		    	var dateStart = new Date(Number(startdate));
+		    	var enddate = obj[k].enddate;
+		    	var dateEnd = new Date(Number(enddate));
+		    	var mapfile = obj[k].mapfile;
+		    	var distance = obj[k].distance;
+		    	var userId = obj[k].userId;
+		    	var localId = obj[k].localId;
+		    	var observationPoints = obj[k].observationPoints;
+		    	var track = obj[k].track;
+
+		    	var startIcon = L.icon({
+				    iconUrl: 'img/marker-icon-start.png',
+				    iconSize: [20, 20],
+				    iconAnchor: [10, 10],
+				    popupAnchor: [0, -5],
+				    shadowUrl: 'img/shadow.png',
+				    shadowSize: [20, 20],
+				    shadowAnchor: [7, 11]
+				});
+				var stopIcon = L.icon({
+				    iconUrl: 'img/marker-icon-stop.png',
+				    iconSize: [20, 20],
+				    iconAnchor: [10, 10],
+				    popupAnchor: [0, -5],
+				    shadowUrl: 'img/shadow.png',
+				    shadowSize: [20, 20],
+				    shadowAnchor: [7, 11]
+				});
+
+		    	//Decode track
+		    	trackPointList = [];
+		    	var jsonTrack = JSON.parse(track);
+		    	for (var i = 0; i < jsonTrack.length; i++) {
+		    		var latitude = Number(jsonTrack[i].mLatitude);
+					var longitude = Number(jsonTrack[i].mLongitude);
+					var point = new L.LatLng(latitude, longitude);
+					trackPointList.push(point);
+		    	}
+		    	var marker = L.marker(trackPointList[0], {icon: startIcon}).addTo(mymap);
+				marker.bindPopup("<b>Start</b> "+dateStart.format("HH:MM"));
+				var marker = L.marker(trackPointList[trackPointList.length-1], {icon: stopIcon}).addTo(mymap);
+				marker.bindPopup("<b>Slutt</b> "+dateEnd.format("HH:MM"));
+
+		    	var trackPolyline = new L.Polyline(trackPointList, {
+				    color: 'red',
+				    weight: 4,
+				    opacity: 0.8,
+				    smoothFactor: 1
+				}).bindPopup('<b>'+title+'</b><br>'+dateStart.format("dd/mm/yyyy HH:MM")+'-'+dateEnd.format('HH:MM')+'<br><b>Gjeter:</b> '+name+'<br><b>Deltakere:</b> '+participants+'<br><b>Vær:</b> '+weather+'<br><b>Detaljer:</b> '+description+'<br><b>Distanse:</b> '+distance+'<br><b>Antall sau sett:</b> '+3);
+
+				trackPolyline.addTo(mymap);
+				mymap.fitBounds(trackPolyline.getBounds());
 
 				var redIcon = L.icon({
 				    iconUrl: 'img/marker-icon-2x-red-2.png',
@@ -261,72 +243,134 @@
 				    shadowAnchor: [13, 40]
 				});
 
-				// Observation point
-				var latitude = Number(res[0]);
-				var longitude = Number(res[1]);
+				//Decode observation points
+				var jsonObservationPoints = JSON.parse(observationPoints);
+				//alert(jsonObservationPoints);
+				for (var i = 0; i < jsonObservationPoints.length; i++) {
+					var latitude = Number(jsonObservationPoints[i].locationPoint.mLatitude);
+					var longitude = Number(jsonObservationPoints[i].locationPoint.mLongitude);
+					var pointParent = new L.LatLng(latitude, longitude);
+					var date = new Date(Number(jsonObservationPoints[i].timeOfObservationPoint));
+					var marker = L.marker(pointParent, {icon: redIcon}).addTo(mymap);
+					marker.bindPopup("<b>Observasjonspunkt "+jsonObservationPoints[i].pointId+"</b><br>Kl. "+date.format("HH:MM")+"<br>Sau sett: "+jsonObservationPoints[i].sheepCount);
+					//Decode observations
+					var observationList = jsonObservationPoints[i].observationList;
+					for (var j = 0; j < observationList.length; j++) {
+						var latitude = Number(observationList[j].locationObservation.mLatitude);
+						var longitude = Number(observationList[j].locationObservation.mLongitude);
+						var pointChild = new L.LatLng(latitude, longitude);
+						var marker = L.marker(pointChild, {icon: blueIcon}).addTo(mymap);
+						marker.bindPopup("<b>Observasjon "+observationList[j].observationId+"</b><br>Type: "+observationList[j].typeOfObservation+"<br>Antall: "+observationList[j].sheepCount);
+						// Add polyline between observation point and observation
+						var line = new L.Polyline([pointParent,pointChild], {
+						    color: 'blue',
+						    weight: 3,
+						    opacity: 0.8,
+						    smoothFactor: 1
+						});
+						line.addTo(mymap);
+					}
+				}
+	    	}
+    	}
+    		/*var title = obj[0].title;
+	    	var name = obj[0].name;
+	    	var participants = obj[0].participants;
+	    	var weather = obj[0].weather;
+	    	var description = obj[0].description;
+	    	var startdate = obj[0].startdate;
+	    	var dateStart = new Date(Number(startdate));
+	    	var enddate = obj[0].enddate;
+	    	var dateEnd = new Date(Number(enddate));
+	    	var mapfile = obj[0].mapfile;
+	    	var distance = obj[0].distance;
+	    	var userId = obj[0].userId;
+	    	var localId = obj[0].localId;
+	    	var observationPoints = obj[0].observationPoints;
+	    	var track = obj[0].track;
+
+	    	var startIcon = L.icon({
+			    iconUrl: 'img/marker-icon-start.png',
+			    iconSize: [20, 20],
+			    iconAnchor: [10, 10],
+			    popupAnchor: [0, -5],
+			    shadowUrl: 'img/shadow.png',
+			    shadowSize: [20, 20],
+			    shadowAnchor: [7, 11]
+			});
+			var stopIcon = L.icon({
+			    iconUrl: 'img/marker-icon-stop.png',
+			    iconSize: [20, 20],
+			    iconAnchor: [10, 10],
+			    popupAnchor: [0, -5],
+			    shadowUrl: 'img/shadow.png',
+			    shadowSize: [20, 20],
+			    shadowAnchor: [7, 11]
+			});
+
+	    	//Decode track
+	    	trackPointList = [];
+	    	var jsonTrack = JSON.parse(track);
+	    	for (var i = 0; i < jsonTrack.length; i++) {
+	    		var latitude = Number(jsonTrack[i].mLatitude);
+				var longitude = Number(jsonTrack[i].mLongitude);
 				var point = new L.LatLng(latitude, longitude);
-				pointListObsPoint.push(point);
-				var date = new Date(Number(res[4]));
-				// Add marker
-				var marker = L.marker(point, {icon: redIcon}).addTo(mymap);
-				marker.bindPopup("<b>Observasjonspunkt "+res[2]+"</b><br>Kl. "+date.format("HH:MM")+"<br>Sau sett: "+res[3]);
+				trackPointList.push(point);
+	    	}
+	    	var marker = L.marker(trackPointList[0], {icon: startIcon}).addTo(mymap);
+			marker.bindPopup("<b>Start</b> "+dateStart.format("HH:MM"));
+			var marker = L.marker(trackPointList[trackPointList.length-1], {icon: stopIcon}).addTo(mymap);
+			marker.bindPopup("<b>Slutt</b> "+dateEnd.format("HH:MM"));
 
-				// Observation
-				var latitude = Number(res[6]);
-				var longitude = Number(res[7]);
-				var point = new L.LatLng(latitude, longitude);
-				pointListObsPoint.push(point);
-				var date = new Date(Number(res[4]));
-				// Add marker
-				var type = res[10];
-				var marker = L.marker(point, {icon: blueIcon}).addTo(mymap);
-				marker.bindPopup("<b>Observasjon "+res[8]+"</b><br>Type: "+type+"<br>Antall: "+res[9]);
+	    	var trackPolyline = new L.Polyline(trackPointList, {
+			    color: 'red',
+			    weight: 4,
+			    opacity: 0.8,
+			    smoothFactor: 1
+			}).bindPopup('<b>'+title+'</b><br>'+dateStart.format("dd/mm/yyyy HH:MM")+'-'+dateEnd.format('HH:MM')+'<br><b>Gjeter:</b> '+name+'<br><b>Deltakere:</b> '+participants+'<br><b>Vær:</b> '+weather+'<br><b>Detaljer:</b> '+description+'<br><b>Distanse:</b> '+distance+'<br><b>Antall sau sett:</b> '+3);
 
-				// Add polyline between observation point and observation
-				var trackPolyline = new L.Polyline(pointListObsPoint, {
-				    color: 'blue',
-				    weight: 3,
-				    opacity: 0.8,
-				    smoothFactor: 1
-				});
-				trackPolyline.addTo(mymap);
-				// Check if there are more observations from the observation point
-				if (res.length > 11) {
-					// Observation
-					var latitude = Number(res[12]);
-					var longitude = Number(res[13]);
-					var point = new L.LatLng(latitude, longitude);
-					var list = [];
-					list.push(new L.LatLng(Number(res[0]), Number(res[1])));
-					list.push(point);
-					// Add marker
-					var type = res[16];
-					var marker = L.marker(point, {icon: blueIcon}).addTo(mymap);
-					marker.bindPopup("<b>Observasjon "+res[14]+"</b><br>Type: "+type+"<br>Antall: "+res[15]);
+			trackPolyline.addTo(mymap);
+			mymap.fitBounds(trackPolyline.getBounds());
 
+			var redIcon = L.icon({
+			    iconUrl: 'img/marker-icon-2x-red-2.png',
+			    iconSize: [25, 41],
+			    iconAnchor: [13, 40],
+			    popupAnchor: [0, -33],
+			    shadowUrl: 'img/marker-shadow.png',
+			    shadowSize: [41, 41],
+			    shadowAnchor: [13, 40]
+			});
+			var blueIcon = L.icon({
+			    iconUrl: 'img/marker-icon-2x-blue.png',
+			    iconSize: [25, 41],
+			    iconAnchor: [13, 40],
+			    popupAnchor: [0, -33],
+			    shadowUrl: 'img/marker-shadow.png',
+			    shadowSize: [41, 41],
+			    shadowAnchor: [13, 40]
+			});
+
+			//Decode observation points
+			var jsonObservationPoints = JSON.parse(observationPoints);
+			//alert(jsonObservationPoints);
+			for (var i = 0; i < jsonObservationPoints.length; i++) {
+				var latitude = Number(jsonObservationPoints[i].locationPoint.mLatitude);
+				var longitude = Number(jsonObservationPoints[i].locationPoint.mLongitude);
+				var pointParent = new L.LatLng(latitude, longitude);
+				var date = new Date(Number(jsonObservationPoints[i].timeOfObservationPoint));
+				var marker = L.marker(pointParent, {icon: redIcon}).addTo(mymap);
+				marker.bindPopup("<b>Observasjonspunkt "+jsonObservationPoints[i].pointId+"</b><br>Kl. "+date.format("HH:MM")+"<br>Sau sett: "+jsonObservationPoints[i].sheepCount);
+				//Decode observations
+				var observationList = jsonObservationPoints[i].observationList;
+				for (var j = 0; j < observationList.length; j++) {
+					var latitude = Number(observationList[j].locationObservation.mLatitude);
+					var longitude = Number(observationList[j].locationObservation.mLongitude);
+					var pointChild = new L.LatLng(latitude, longitude);
+					var marker = L.marker(pointChild, {icon: blueIcon}).addTo(mymap);
+					marker.bindPopup("<b>Observasjon "+observationList[j].observationId+"</b><br>Type: "+observationList[j].typeOfObservation+"<br>Antall: "+observationList[j].sheepCount);
 					// Add polyline between observation point and observation
-					var line = new L.Polyline(list, {
-					    color: 'blue',
-					    weight: 3,
-					    opacity: 0.8,
-					    smoothFactor: 1
-					});
-					line.addTo(mymap);
-				} else if (res.length > 17) {
-					// Observation
-					var latitude = Number(res[18]);
-					var longitude = Number(res[19]);
-					var point = new L.LatLng(latitude, longitude);
-					var list = [];
-					list.push(new L.LatLng(Number(res[0]), Number(res[1])));
-					list.push(point);
-					// Add marker
-					var type = res[22];
-					var marker = L.marker(point, {icon: blueIcon}).addTo(mymap);
-					marker.bindPopup("<b>Observasjon "+res[20]+"</b><br>Type: "+type+"<br>Antall: "+res[21]);
-
-					// Add polyline between observation point and observation
-					var line = new L.Polyline(list, {
+					var line = new L.Polyline([pointParent,pointChild], {
 					    color: 'blue',
 					    weight: 3,
 					    opacity: 0.8,
@@ -335,46 +379,12 @@
 					line.addTo(mymap);
 				}
 			}
-		}
-		for (var i = 0; i < jArray.length; i++) {
-			var res = jArray[i].toString().split(',');
-			var latitude = Number(res[0]);
-			var longitude = Number(res[1]);
-			var point = new L.LatLng(latitude, longitude);
-			pointList.push(point);
-		}
-		var startIcon = L.icon({
-		    iconUrl: 'img/marker-icon-start.png',
-		    iconSize: [20, 20],
-		    iconAnchor: [10, 10],
-		    popupAnchor: [0, -5],
-		    shadowUrl: 'img/shadow.png',
-		    shadowSize: [20, 20],
-		    shadowAnchor: [7, 11]
-		});
-		var stopIcon = L.icon({
-		    iconUrl: 'img/marker-icon-stop.png',
-		    iconSize: [20, 20],
-		    iconAnchor: [10, 10],
-		    popupAnchor: [0, -5],
-		    shadowUrl: 'img/shadow.png',
-		    shadowSize: [20, 20],
-		    shadowAnchor: [7, 11]
-		});
-		var marker = L.marker(pointList[0], {icon: startIcon}).addTo(mymap);
-		marker.bindPopup("<b>Start</b> <?= $starttime ?>");
-		var marker = L.marker(pointList[pointList.length-1], {icon: stopIcon}).addTo(mymap);
-		marker.bindPopup("<b>Slutt</b> <?= $endtime ?>");
+    	}*/
+    	
 
-		var trackPolyline = new L.Polyline(pointList, {
-		    color: 'red',
-		    weight: 4,
-		    opacity: 0.8,
-		    smoothFactor: 1
-		}).bindPopup('<b><?= $title ?></b><br><?= $startdate ?> kl. <?= $starttime ?>-<?= $endtime ?><br><b>Gjeter:</b> <?= $name ?><br><b>Deltakere:</b> <?= $participants?><br><b>Vær:</b> <?= $weather ?><br><b>Detaljer:</b> <?= $description ?><br><b>Distanse:</b> <?= $distance ?><br><b>Antall sau sett:</b> '+antallSau);
+    };
+    oReq.open("get", "includes/get-data.inc.php", true);
+    oReq.send();
 
-		trackPolyline.addTo(mymap);
-		mymap.fitBounds(trackPolyline.getBounds());
-	}
 </script>
 </html>
