@@ -1,5 +1,6 @@
 <?php
 	class Hike {
+		var $id;
 		var $title;
 		var $name;
 		var $participants;
@@ -14,6 +15,12 @@
 		var $userId;
 		var $localId;
 
+		function set_id($new_id) {
+			$this->id = $new_id;
+		}
+		function get_id() {
+			return $this->id;
+		}
 		function set_title($new_title) {
 			$this->title = $new_title;
 		}

@@ -50,6 +50,16 @@
         	line-height: 30px;
         	font-size: 11pt;
         }
+        #dates li {
+        	line-height: 30px;
+        	font-size: 11pt;
+        	list-style: none;
+        }
+        #dates input[type="checkbox"] {
+        	vertical-align: middle;
+        	position: relative;
+        	margin-bottom: 5px;
+        }
         #dates a {
         	line-height: 30px;
         	font-size: 11pt;
@@ -123,7 +133,8 @@
 	            </div>
 
 	            <div class="sidebar-pane" id="dates">
-	                <h1 class="sidebar-header">Datoer<span class="sidebar-close"><i class="fa fa-caret-left"></i></span></h1>	                
+	                <h1 class="sidebar-header">Datoer<span class="sidebar-close"><i class="fa fa-caret-left"></i></span></h1>
+	                <ul id="hikes-list"></ul>
 	            </div>
 
 	            <div class="sidebar-pane" id="settings">
@@ -160,6 +171,7 @@
     		alert("Ingen turer å vise");
     	} else {
     		for (var k = 0; k < obj.length; k++) {
+    			var id = obj[k].id;
     			var title = obj[k].title;
 		    	var name = obj[k].name;
 		    	var participants = obj[k].participants;
@@ -279,32 +291,38 @@
 				overlays.key=layer;
 
 				//Add hikes to dates page
-				var newHTML = '<a>'+title+' '+dateStart.format("dd/mm/yyyy HH:MM")+'</a><br>';
-				$("#dates").append(newHTML);
+				//var newHTML = '<a>'+title+' '+dateStart.format("dd/mm/yyyy HH:MM")+'</a><br>';
+				var newHTML = '<li><input type="checkbox" id="'+id+'"/> '+title+' '+dateStart.format("dd/mm/yyyy HH:MM")+'</li>';
+				$("#hikes-list").append(newHTML);
 	    	}
     	}
     };
     oReq.open("get", "includes/get-data.inc.php", true);
     oReq.send();
 
-    /*$('#dateLink').on('click', function(e) {
-		e.preventDefault();
-		$.ajax({
-			url: "includes/get-data.inc.php",
-			type: "GET",//type of posting the data
-			success: function (data) {
-				//alert(data);
-				var a = document.createElement('a');
-				var linkText = document.createTextNode(user.appname);
-				a.appendChild(linkText);
-			},
-			error: function(xhr, ajaxOptions, thrownError){
-				alert("Error");
-			},
-			timeout: 15000//timeout of the ajax call
-		});
-
-	});*/
+    $('#hikes-list').on('change', 'input[type="checkbox"]', function() {
+	    //alert('click registered');
+	    if (this.checked) {
+	    	// Show the checked hike
+	    	var hikeId = $(this).attr('id');
+	    	var json = {"hikeId": hikeId};
+	    	//alert('Id:'+hikeId);
+	    	$.ajax({
+				url: "includes/get-hike.inc.php",
+				type: "POST",
+				data: json,
+				success: function (data) {
+					//alert(data);
+				},
+				error: function(xhr, ajaxOptions, thrownError){
+					alert("Error");
+				},
+				timeout: 15000//timeout of the ajax call
+			});
+	    } else {
+	    	// Hide the unchecked hike
+	    }
+	});
 
 </script>
 </html>
