@@ -26,7 +26,7 @@
 	<!-- Latest compiled JavaScript -->
 	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 
-	<!-- Custom fonts for this template -->
+	<!-- Font awesome -->
     <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
 
     <!-- Sidebar -->
@@ -35,6 +35,12 @@
 
     <!-- Date format -->
     <script src="js/Date.js"></script>
+
+    <!-- Geo location -->
+    <!--<link rel="stylesheet" href="css/L.Control.Locate.css" />
+	<script src="js/L.Control.Locate.js" charset="utf-8"></script>-->
+	<link rel="stylesheet" href="css/L.Control.Locate.min.css" />
+	<script src="js/L.Control.Locate.min.js" charset="utf-8"></script>
 
 	<style>
 		body {
@@ -46,9 +52,26 @@
             font: 10pt "Helvetica Neue", Arial, Helvetica, sans-serif;
         }
         p {
-        	color: #000;
+        	color: #333;
         	line-height: 30px;
         	font-size: 11pt;
+        }
+        #home p, li {
+        	color: #000;
+        	line-height: 25px;
+        	font-size: 11pt;
+        }
+        #home ul {
+        	margin-left: 20px;
+        }
+        #settings ul {
+        	margin-left: 20px;
+        }
+        h2 {
+        	font-size: 18pt;
+        }
+        h3 {
+        	font-size: 13pt;
         }
         #dates li {
         	line-height: 30px;
@@ -79,6 +102,25 @@
         	background-color: #26A69A;
         	border-color: #00897B;
         }
+        #profile-div {
+        	margin: auto;
+        	text-align: center;
+        }
+        .circle {
+        	margin: auto;
+        	vertical-align: middle;
+			border-radius: 50%;
+			width: 100px;
+			height: 100px;
+			/* width and height can be anything, as long as they're equal */
+		}
+		#profile-circle {
+			margin-top: 15px;
+			margin-bottom: 10px;
+			background: #ccc;
+			vertical-align: middle;
+			padding: 20px 0;
+		}
 	</style>
 
 </head>
@@ -116,308 +158,57 @@
 	                    <span class="sidebar-close"><i class="fa fa-caret-left"></i></span>
 	                </h1>
 
-	                <p>Hva skal man ha her?</p>
+	                <h2>Velkommen til Pecora Web!</h2>
+	                <p>Her kan du som bruker av Pecora-appen se dine synkroniserte turer med all tilbehørende informasjon.
+	                	<br>
+	                	<br>Det som er annerledes med Pecora web er at du kan velge å se alle turene dine samtidig på kartet eller noen få utvalgte. Kanskje du vil kunne se et mønster over hvor sauene dine befinner seg i området eller hvor rovdyrene pleier å være?
+	                	<br>
+	                	<br>I Pecora Web kan du gjøre følgende:</p>
+	                <ul>
+	                	<li>Se din profil</li>
+	                	<li>Se alle dine synkroniserte turer</li>
+	                	<li><i>Kommer flere funksjoner</i></li>
+	                </ul>
 	            </div>
 
 	            <div class="sidebar-pane" id="profile">
 	                <h1 class="sidebar-header">Profil<span class="sidebar-close"><i class="fa fa-caret-left"></i></span></h1>
-
-	                <p>Navn: <?= $userFirst, " ", $userLast ?></p>
-	                <p>E-mail: <?= $userEmail ?></p>
-	                <p>Brukernavn: <?= $userUid ?></p>
-	                <div class="logout-div">
-						<form action="includes/logout.inc.php" method="POST">
-							<button type="submit" name="submit" class="btn btn-primary">Logg ut</button>
-						</form>
-					</div>
+	                <div id="profile-div">
+	                	<div class="circle" id="profile-circle">
+	                		<i class="fa fa-user" style="font-size: 60px; color: #777; vertical-align: middle;"></i>
+	                	</div>
+		                <p><b>Navn </b> <?= $userFirst, " ", $userLast ?></p>
+		                <p><b>E-post </b> <?= $userEmail ?></p>
+		                <p><b>Brukernavn </b> <?= $userUid ?></p>
+		                <div class="logout-div" style="margin-top: 15px;">
+							<form action="includes/logout.inc.php" method="POST">
+								<button type="submit" name="submit" class="btn btn-primary">Logg ut</button>
+							</form>
+						</div>
+	                </div>
 	            </div>
 
 	            <div class="sidebar-pane" id="dates">
 	                <h1 class="sidebar-header">Datoer<span class="sidebar-close"><i class="fa fa-caret-left"></i></span></h1>
+	                <h3 style="margin-bottom: 10px;">Velg turene du vil se på kartet:</h3>
 	                <ul id="hikes-list"></ul>
 	            </div>
 
 	            <div class="sidebar-pane" id="settings">
 	                <h1 class="sidebar-header">Innstillinger<span class="sidebar-close"><i class="fa fa-caret-left"></i></span></h1>
 
-	                <p>Hva kan være her?</p>
+	                <h3 style="margin-bottom: 10px;">Hva kan være her?</h3>
+	                <ul>
+	                	<li>Forskjellig type kart?</li>
+	                	<li>Generere rapport?</li>
+	                </ul>
 	            </div>
 	        </div>
 	    </div>
 
 		<div id="map" class="sidebar-map"></div>
-		
 
 	</div>
 </body>
-<script>
-	var mymap = L.map('map').setView([63.416957, 10.402937], 13);
-	L.tileLayer('http://opencache.statkart.no/gatekeeper/gk/gk.open_gmaps?layers=topo2&zoom={z}&x={x}&y={y}', {
-	    attribution: '<a href="http://www.kartverket.no/">Kartverket</a> | <a href="http://www.ingridogsondre.no" target="_blank">Frida</a>'
-	}).addTo(mymap);
-
-	var overlays = {};
-
-	var layer = L.layerGroup().addTo(mymap);
-
-	var sidebar = L.control.sidebar('sidebar').addTo(mymap);
-
-	var redIcon = L.icon({
-	    iconUrl: 'img/marker-icon-2x-red-2.png',
-	    iconSize: [25, 41],
-	    iconAnchor: [13, 40],
-	    popupAnchor: [0, -33],
-	    shadowUrl: 'img/marker-shadow.png',
-	    shadowSize: [41, 41],
-	    shadowAnchor: [13, 40]
-	});
-	var blueIcon = L.icon({
-	    iconUrl: 'img/marker-icon-2x-blue.png',
-	    iconSize: [25, 41],
-	    iconAnchor: [13, 40],
-	    popupAnchor: [0, -33],
-	    shadowUrl: 'img/marker-shadow.png',
-	    shadowSize: [41, 41],
-	    shadowAnchor: [13, 40]
-	});
-
-	var startIcon = L.icon({
-	    iconUrl: 'img/marker-icon-start.png',
-	    iconSize: [20, 20],
-	    iconAnchor: [10, 10],
-	    popupAnchor: [0, -5],
-	    shadowUrl: 'img/shadow.png',
-	    shadowSize: [20, 20],
-	    shadowAnchor: [7, 11]
-	});
-	var stopIcon = L.icon({
-	    iconUrl: 'img/marker-icon-stop.png',
-	    iconSize: [20, 20],
-	    iconAnchor: [10, 10],
-	    popupAnchor: [0, -5],
-	    shadowUrl: 'img/shadow.png',
-	    shadowSize: [20, 20],
-	    shadowAnchor: [7, 11]
-	});
-
-    function reqListener () {
-      console.log(this.responseText);
-    }
-
-    var oReq = new XMLHttpRequest(); //New request object
-    oReq.onload = function() {
-    	var obj = JSON.parse(this.responseText);
-    	if (obj == 'error') {
-    		alert("Ingen turer å vise");
-    	} else {
-    		for (var k = 0; k < obj.length; k++) {
-    			var id = obj[k].id;
-    			var title = obj[k].title;
-		    	var name = obj[k].name;
-		    	var participants = obj[k].participants;
-		    	var weather = obj[k].weather;
-		    	var description = obj[k].description;
-		    	var startdate = obj[k].startdate;
-		    	var dateStart = new Date(Number(startdate));
-		    	var enddate = obj[k].enddate;
-		    	var dateEnd = new Date(Number(enddate));
-		    	var mapfile = obj[k].mapfile;
-		    	var distance = obj[k].distance;
-		    	var userId = obj[k].userId;
-		    	var localId = obj[k].localId;
-		    	var observationPoints = obj[k].observationPoints;
-		    	var track = obj[k].track;
-
-		    	//Make a list for the map items as markers and polylines
-				mapItems = [];
-
-				//Decode observation points
-				var jsonObservationPoints = JSON.parse(observationPoints);
-				var totalSheepCount=0;
-				for (var i = 0; i < jsonObservationPoints.length; i++) {
-					var latitude = Number(jsonObservationPoints[i].locationPoint.mLatitude);
-					var longitude = Number(jsonObservationPoints[i].locationPoint.mLongitude);
-					var pointParent = new L.LatLng(latitude, longitude);
-					var date = new Date(Number(jsonObservationPoints[i].timeOfObservationPoint));
-					var marker = L.marker(pointParent, {icon: redIcon});
-					marker.bindPopup("<b>Observasjonspunkt "+jsonObservationPoints[i].pointId+"</b><br>Kl. "+date.format("HH:MM")+"<br>Sau sett: "+jsonObservationPoints[i].sheepCount);
-					mapItems.push(marker);
-					totalSheepCount+=Number(jsonObservationPoints[i].sheepCount);
-					//Decode observations
-					var observationList = jsonObservationPoints[i].observationList;
-					for (var j = 0; j < observationList.length; j++) {
-						var latitude = Number(observationList[j].locationObservation.mLatitude);
-						var longitude = Number(observationList[j].locationObservation.mLongitude);
-						var pointChild = new L.LatLng(latitude, longitude);
-						var marker = L.marker(pointChild, {icon: blueIcon});
-						mapItems.push(marker);
-						marker.bindPopup("<b>Observasjon "+observationList[j].observationId+"</b><br>Type: "+observationList[j].typeOfObservation+"<br>Antall: "+observationList[j].sheepCount);
-						// Add polyline between observation point and observation
-						var line = new L.Polyline([pointParent,pointChild], {
-						    color: 'blue',
-						    weight: 3,
-						    opacity: 0.8,
-						    smoothFactor: 1
-						});
-						mapItems.push(line);
-					}
-				}
-
-				//Decode track
-		    	trackPointList = [];
-		    	var jsonTrack = JSON.parse(track);
-		    	for (var i = 0; i < jsonTrack.length; i++) {
-		    		var latitude = Number(jsonTrack[i].mLatitude);
-					var longitude = Number(jsonTrack[i].mLongitude);
-					var point = new L.LatLng(latitude, longitude);
-					trackPointList.push(point);
-		    	}
-		    	
-		    	var markerStart = L.marker(trackPointList[0], {icon: startIcon});
-				markerStart.bindPopup("<b>Start</b> "+dateStart.format("HH:MM"));
-				mapItems.push(markerStart);
-				var markerEnd = L.marker(trackPointList[trackPointList.length-1], {icon: stopIcon});
-				markerEnd.bindPopup("<b>Slutt</b> "+dateEnd.format("HH:MM"));
-				mapItems.push(markerEnd);
-
-		    	var trackPolyline = new L.Polyline(trackPointList, {
-				    color: 'red',
-				    weight: 4,
-				    opacity: 0.8,
-				    smoothFactor: 1
-				}).bindPopup('<b>'+title+'</b><br>'+dateStart.format("dd/mm/yyyy HH:MM")+'-'+dateEnd.format('HH:MM')+'<br><b>Gjeter:</b> '+name+'<br><b>Deltakere:</b> '+participants+'<br><b>Antall sau sett:</b> '+totalSheepCount+'<br><b>Vær:</b> '+weather+'<br><b>Distanse:</b> '+distance+'<br><b>Detaljer:</b> '+description);
-				mapItems.push(trackPolyline);
-				//mymap.fitBounds(trackPolyline.getBounds());
-
-				//Add all map items to the map
-				//var layer = L.layerGroup(mapItems).addTo(mymap);
-
-				//Add hikes to dates page
-				var newHTML = '<li><input type="checkbox" id="'+id+'"/> '+title+' '+dateStart.format("dd/mm/yyyy HH:MM")+'</li>';
-				$("#hikes-list").append(newHTML);
-	    	}
-    	}
-    };
-    oReq.open("get", "includes/get-data.inc.php", true);
-    oReq.send();
-
-    $('#hikes-list').on('change', 'input[type="checkbox"]', function() {
-	    var hikeId = $(this).attr('id');
-	    if (this.checked) {
-	    	var json = {"hikeId": hikeId};
-	    	$.ajax({
-				url: "includes/get-hike.inc.php",
-				type: "POST",
-				data: json,
-				success: function (data) {
-					//Show the checked hike on the map
-					var hike = JSON.parse(data);
-					showHikeOnMap(hike);
-
-				},
-				error: function(xhr, ajaxOptions, thrownError){
-					alert("Error");
-				},
-				timeout: 15000 //timeout of the ajax call
-			});
-	    } else {
-	    	// Hide the unchecked hike
-	    	removeHikeFromMap(hikeId);
-	    }
-	});
-
-	function removeHikeFromMap(hikeId) {
-		//Remove the hike from the map
-		layer.eachLayer(function (layerInGroup) {
-		    if (layerInGroup.id === hikeId) {
-		    	layer.removeLayer(layerInGroup);
-		    }// it's the marker
-		});
-	}
-
-	function showHikeOnMap(hike) {
-		var id = hike.id;
-		var title = hike.title;
-    	var name = hike.name;
-    	var participants = hike.participants;
-    	var weather = hike.weather;
-    	var description = hike.description;
-    	var startdate = hike.startdate;
-    	var dateStart = new Date(Number(startdate));
-    	var enddate = hike.enddate;
-    	var dateEnd = new Date(Number(enddate));
-    	var mapfile = hike.mapfile;
-    	var distance = hike.distance;
-    	var userId = hike.userId;
-    	var localId = hike.localId;
-    	var observationPoints = hike.observationPoints;
-    	var track = hike.track;
-
-		mapItems = [];
-
-		//Decode observation points
-		var jsonObservationPoints = JSON.parse(observationPoints);
-		var totalSheepCount=0;
-		for (var i = 0; i < jsonObservationPoints.length; i++) {
-			var latitude = Number(jsonObservationPoints[i].locationPoint.mLatitude);
-			var longitude = Number(jsonObservationPoints[i].locationPoint.mLongitude);
-			var pointParent = new L.LatLng(latitude, longitude);
-			var date = new Date(Number(jsonObservationPoints[i].timeOfObservationPoint));
-			var marker = L.marker(pointParent, {icon: redIcon});
-			marker.bindPopup("<b>Observasjonspunkt "+jsonObservationPoints[i].pointId+"</b><br>Kl. "+date.format("HH:MM")+"<br>Sau sett: "+jsonObservationPoints[i].sheepCount);
-			mapItems.push(marker);
-			totalSheepCount+=Number(jsonObservationPoints[i].sheepCount);
-			//Decode observations
-			var observationList = jsonObservationPoints[i].observationList;
-			for (var j = 0; j < observationList.length; j++) {
-				var latitude = Number(observationList[j].locationObservation.mLatitude);
-				var longitude = Number(observationList[j].locationObservation.mLongitude);
-				var pointChild = new L.LatLng(latitude, longitude);
-				var marker = L.marker(pointChild, {icon: blueIcon});
-				mapItems.push(marker);
-				marker.bindPopup("<b>Observasjon "+observationList[j].observationId+"</b><br>Type: "+observationList[j].typeOfObservation+"<br>Antall: "+observationList[j].sheepCount);
-				// Add polyline between observation point and observation
-				var line = new L.Polyline([pointParent,pointChild], {
-				    color: 'blue',
-				    weight: 3,
-				    opacity: 0.8,
-				    smoothFactor: 1
-				});
-				mapItems.push(line);
-			}
-		}
-
-		//Decode track
-    	trackPointList = [];
-    	var jsonTrack = JSON.parse(track);
-    	for (var i = 0; i < jsonTrack.length; i++) {
-    		var latitude = Number(jsonTrack[i].mLatitude);
-			var longitude = Number(jsonTrack[i].mLongitude);
-			var point = new L.LatLng(latitude, longitude);
-			trackPointList.push(point);
-    	}
-    	
-    	var markerStart = L.marker(trackPointList[0], {icon: startIcon});
-		markerStart.bindPopup("<b>Start</b> "+dateStart.format("HH:MM"));
-		mapItems.push(markerStart);
-		var markerEnd = L.marker(trackPointList[trackPointList.length-1], {icon: stopIcon});
-		markerEnd.bindPopup("<b>Slutt</b> "+dateEnd.format("HH:MM"));
-		mapItems.push(markerEnd);
-
-    	var trackPolyline = new L.Polyline(trackPointList, {
-		    color: 'red',
-		    weight: 4,
-		    opacity: 0.8,
-		    smoothFactor: 1
-		}).bindPopup('<b>'+title+'</b><br>'+dateStart.format("dd/mm/yyyy HH:MM")+'-'+dateEnd.format('HH:MM')+'<br><b>Gjeter:</b> '+name+'<br><b>Deltakere:</b> '+participants+'<br><b>Antall sau sett:</b> '+totalSheepCount+'<br><b>Vær:</b> '+weather+'<br><b>Distanse:</b> '+distance+'<br><b>Detaljer:</b> '+description);
-		mapItems.push(trackPolyline);
-		mymap.fitBounds(trackPolyline.getBounds());
-
-		//Add all map items to the map
-		var layer2 = L.layerGroup(mapItems);
-		layer2.id = id;
-		layer.addLayer(layer2);
-	}
-
-</script>
+<script src="js/script.js"></script>
 </html>
