@@ -1,6 +1,6 @@
 var mymap = L.map('map').setView([63.416957, 10.402937], 13);
-L.tileLayer('http://opencache.statkart.no/gatekeeper/gk/gk.open_gmaps?layers=topo2&zoom={z}&x={x}&y={y}', {
-    attribution: '<a href="http://www.kartverket.no/">Kartverket</a> | <a href="http://www.ingridogsondre.no" target="_blank">Frida</a>'
+L.tileLayer('https://opencache.statkart.no/gatekeeper/gk/gk.open_gmaps?layers=topo2&zoom={z}&x={x}&y={y}', {
+    attribution: '<a href="https://www.kartverket.no/">Kartverket</a> | <a href="http://www.ingridogsondre.no" target="_blank">Frida</a>'
 }).addTo(mymap);
 // Layergroup for adding hike layers
 var layer = L.layerGroup().addTo(mymap);
