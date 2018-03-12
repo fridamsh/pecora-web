@@ -9,6 +9,7 @@
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no">
 	<title>Pecora Web</title>
+	<link rel="icon" type="image/png" href="img/ic_pecora_3.png">
 
 	<link rel="stylesheet" type="text/css" href="css/style.css">
 
@@ -37,8 +38,6 @@
     <script src="js/Date.js"></script>
 
     <!-- Geo location -->
-    <!--<link rel="stylesheet" href="css/L.Control.Locate.css" />
-	<script src="js/L.Control.Locate.js" charset="utf-8"></script>-->
 	<link rel="stylesheet" href="css/L.Control.Locate.min.css" />
 	<script src="js/L.Control.Locate.min.js" charset="utf-8"></script>
 
@@ -112,7 +111,6 @@
 			border-radius: 50%;
 			width: 100px;
 			height: 100px;
-			/* width and height can be anything, as long as they're equal */
 		}
 		#profile-circle {
 			margin-top: 15px;
@@ -128,10 +126,6 @@
 	<?php
 		if (isset($_SESSION['u_id'])) {
 			$userId = $_SESSION['u_id'];
-			$userFirst = $_SESSION['u_first'];
-			$userLast = $_SESSION['u_last'];
-			$userEmail = $_SESSION['u_email'];
-			$userUid = $_SESSION['u_uid'];
 		} else {
 			header("Location: login.php");
 			exit();
@@ -177,9 +171,7 @@
 	                	<div class="circle" id="profile-circle">
 	                		<i class="fa fa-user" style="font-size: 60px; color: #777; vertical-align: middle;"></i>
 	                	</div>
-		                <p><b>Navn </b> <?= $userFirst, " ", $userLast ?></p>
-		                <p><b>E-post </b> <?= $userEmail ?></p>
-		                <p><b>Brukernavn </b> <?= $userUid ?></p>
+	                	<div id="profile-data"></div>
 		                <div class="logout-div" style="margin-top: 15px;">
 							<form action="includes/logout.inc.php" method="POST">
 								<button type="submit" name="submit" class="btn btn-primary">Logg ut</button>

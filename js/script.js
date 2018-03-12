@@ -9,6 +9,22 @@ var sidebar = L.control.sidebar('sidebar').addTo(mymap);
 // Geolocate plugin
 L.control.locate().addTo(mymap);
 
+$.ajax({
+	url: "includes/get-user.inc.php",
+	type: "GET",
+	success: function (data) {
+		//Show the checked hike on the map
+		var user = JSON.parse(data);
+		//Add user info to profile page
+		var newHTML = '<p><b>Navn </b>' + user.name + ' ' + user.lastname + '</p>' + '<p><b>Email </b>' + user.email + '</p>' + '<p><b>Brukernavn </b>' + user.username + '</p>';
+		$("#profile-data").append(newHTML);
+	},
+	error: function(xhr, ajaxOptions, thrownError){
+		alert("Error");
+	},
+	timeout: 15000 //timeout of the ajax call
+});
+
 var redIcon = L.icon({
     iconUrl: 'img/marker-icon-2x-red-2.png',
     iconSize: [25, 41],
@@ -75,70 +91,6 @@ oReq.onload = function() {
 	    	var observationPoints = obj[k].observationPoints;
 	    	var track = obj[k].track;
 
-	    	//Make a list for the map items as markers and polylines
-			mapItems = [];
-
-			//Decode observation points
-			var jsonObservationPoints = JSON.parse(observationPoints);
-			var totalSheepCount=0;
-			for (var i = 0; i < jsonObservationPoints.length; i++) {
-				var latitude = Number(jsonObservationPoints[i].locationPoint.mLatitude);
-				var longitude = Number(jsonObservationPoints[i].locationPoint.mLongitude);
-				var pointParent = new L.LatLng(latitude, longitude);
-				var date = new Date(Number(jsonObservationPoints[i].timeOfObservationPoint));
-				var marker = L.marker(pointParent, {icon: redIcon});
-				marker.bindPopup("<b>Observasjonspunkt "+jsonObservationPoints[i].pointId+"</b><br>Kl. "+date.format("HH:MM")+"<br>Sau sett: "+jsonObservationPoints[i].sheepCount);
-				mapItems.push(marker);
-				totalSheepCount+=Number(jsonObservationPoints[i].sheepCount);
-				//Decode observations
-				var observationList = jsonObservationPoints[i].observationList;
-				for (var j = 0; j < observationList.length; j++) {
-					var latitude = Number(observationList[j].locationObservation.mLatitude);
-					var longitude = Number(observationList[j].locationObservation.mLongitude);
-					var pointChild = new L.LatLng(latitude, longitude);
-					var marker = L.marker(pointChild, {icon: blueIcon});
-					mapItems.push(marker);
-					marker.bindPopup("<b>Observasjon "+observationList[j].observationId+"</b><br>Type: "+observationList[j].typeOfObservation+"<br>Antall: "+observationList[j].sheepCount);
-					// Add polyline between observation point and observation
-					var line = new L.Polyline([pointParent,pointChild], {
-					    color: 'blue',
-					    weight: 3,
-					    opacity: 0.8,
-					    smoothFactor: 1
-					});
-					mapItems.push(line);
-				}
-			}
-
-			//Decode track
-	    	trackPointList = [];
-	    	var jsonTrack = JSON.parse(track);
-	    	for (var i = 0; i < jsonTrack.length; i++) {
-	    		var latitude = Number(jsonTrack[i].mLatitude);
-				var longitude = Number(jsonTrack[i].mLongitude);
-				var point = new L.LatLng(latitude, longitude);
-				trackPointList.push(point);
-	    	}
-	    	
-	    	var markerStart = L.marker(trackPointList[0], {icon: startIcon});
-			markerStart.bindPopup("<b>Start</b> "+dateStart.format("HH:MM"));
-			mapItems.push(markerStart);
-			var markerEnd = L.marker(trackPointList[trackPointList.length-1], {icon: stopIcon});
-			markerEnd.bindPopup("<b>Slutt</b> "+dateEnd.format("HH:MM"));
-			mapItems.push(markerEnd);
-
-	    	var trackPolyline = new L.Polyline(trackPointList, {
-			    color: 'red',
-			    weight: 4,
-			    opacity: 0.8,
-			    smoothFactor: 1
-			}).bindPopup('<b>'+title+'</b><br>'+dateStart.format("dd/mm/yyyy HH:MM")+'-'+dateEnd.format('HH:MM')+'<br><b>Gjeter:</b> '+name+'<br><b>Deltakere:</b> '+participants+'<br><b>Antall sau sett:</b> '+totalSheepCount+'<br><b>Vær:</b> '+weather+'<br><b>Distanse:</b> '+distance+'<br><b>Detaljer:</b> '+description);
-			mapItems.push(trackPolyline);
-			//mymap.fitBounds(trackPolyline.getBounds());
-
-			//Add all map items to the map
-			//var layer = L.layerGroup(mapItems).addTo(mymap);
-
 			//Add hikes to dates page
 			var newHTML = '<li><input type="checkbox" id="'+id+'"/> '+title+' '+dateStart.format("dd/mm/yyyy HH:MM")+'</li>';
 			$("#hikes-list").append(newHTML);
@@ -160,7 +112,6 @@ $('#hikes-list').on('change', 'input[type="checkbox"]', function() {
 				//Show the checked hike on the map
 				var hike = JSON.parse(data);
 				showHikeOnMap(hike);
-
 			},
 			error: function(xhr, ajaxOptions, thrownError){
 				alert("Error");
@@ -178,7 +129,7 @@ function removeHikeFromMap(hikeId) {
 	layer.eachLayer(function (layerInGroup) {
 	    if (layerInGroup.id === hikeId) {
 	    	layer.removeLayer(layerInGroup);
-	    }// it's the marker
+	    }
 	});
 }
 
@@ -265,11 +216,3 @@ function showHikeOnMap(hike) {
 	layer2.id = id;
 	layer.addLayer(layer2);
 }
-
-function locateUser() {
-	mymap.locate({setView : true});
-}
-
-$('#location').on('click', function() {
-   locateUser();
-});
