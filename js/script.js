@@ -13,11 +13,17 @@ $.ajax({
 	url: "includes/get-user.inc.php",
 	type: "GET",
 	success: function (data) {
-		//Show the checked hike on the map
 		var user = JSON.parse(data);
-		//Add user info to profile page
-		var newHTML = '<p><b>Navn </b>' + user.name + ' ' + user.lastname + '</p>' + '<p><b>Email </b>' + user.email + '</p>' + '<p><b>Brukernavn </b>' + user.username + '</p>';
-		$("#profile-data").append(newHTML);
+		//Check if there was an error reading from the database
+		if (user.error == 'error') {
+			alert("Ingen turer å vise");
+		} else {
+			//Make html to append to profile page
+			var newHTML = '<p><b>Navn </b>' + user.name + ' ' + user.lastname + '</p>' + '<p><b>Email </b>' + user.email + '</p>' + 
+			'<p><b>Brukernavn </b>' + user.username + '</p>';
+			//Append html to profile data div
+			$("#profile-data").append(newHTML);
+		}
 	},
 	error: function(xhr, ajaxOptions, thrownError){
 		alert("Kunne ikke laste inn brukerdata");
@@ -30,15 +36,16 @@ $.ajax({
 	type: "GET",
 	success: function (data) {
 		var obj = JSON.parse(data);
-		if (obj == 'error') {
-			alert("Ingen turer å vise");
+		if (obj.error == 'error') {
+			var newHTML = '<li><i>Ingen turer å vise</i></li>';
+			$("#hikes-list").append(newHTML);
 		} else {
 			for (var k = 0; k < obj.length; k++) {
 				var id = obj[k].id;
 				var title = obj[k].title;
 		    	var startdate = obj[k].startdate;
 		    	var dateStart = new Date(Number(startdate));
-				//Add hikes to dates page
+				//Add hikes to the dates page
 				var newHTML = '<li><input type="checkbox" id="'+id+'"/> '+title+' '+dateStart.format("dd/mm/yyyy HH:MM")+'</li>';
 				$("#hikes-list").append(newHTML);
 	    	}
@@ -52,13 +59,17 @@ $.ajax({
 
 function createRandomColor() {
 	/*var color;
-	var r = Math.floor(Math.random() * 200);
-	var g = Math.floor(Math.random() * 200);
-	var b = Math.floor(Math.random() * 200);
+	var r = Math.floor(Math.random() * 255);
+	var g = Math.floor(Math.random() * 255);
+	var b = Math.floor(Math.random() * 255);
 	color = "rgb(" + r + "," + g + "," + b + ")";*/
 
 	//Defined a list with some nice colors, can add here if I want
-	var colors = ['rgb(255, 0, 0)', 'rgb(255, 102, 0)', 'rgb(255, 0, 102)', 'rgb(204, 0, 153)', 'rgb(204, 102, 0)', 'rgb(255, 255, 0)', 'rgb(255, 204, 0)', 'rgb(204, 255, 51)', 'rgb(153, 255, 51)', 'rgb(102, 153, 0)', 'rgb(0, 153, 0)', 'rgb(51, 204, 51)', 'rgb(0, 204, 102)', 'rgb(0, 204, 153)', 'rgb(0, 153, 153)', 'rgb(0, 255, 204)', 'rgb(51, 204, 204)', 'rgb(0, 102, 153)', 'rgb(0, 204, 255)', 'rgb(0, 51, 204)', 'rgb(0, 102, 255)', 'rgb(102, 102, 255)', 'rgb(102, 0, 204)', 'rgb(204, 102, 255)'];
+	var colors = ['rgb(255, 0, 0)', 'rgb(255, 102, 0)', 'rgb(255, 0, 102)', 'rgb(204, 0, 153)', 
+	'rgb(204, 102, 0)', 'rgb(255, 255, 0)', 'rgb(255, 204, 0)', 'rgb(204, 255, 51)', 'rgb(153, 255, 51)', 
+	'rgb(102, 153, 0)', 'rgb(0, 153, 0)', 'rgb(51, 204, 51)', 'rgb(0, 204, 102)', 'rgb(0, 204, 153)', 
+	'rgb(0, 153, 153)', 'rgb(0, 255, 204)', 'rgb(51, 204, 204)', 'rgb(0, 102, 153)', 'rgb(0, 204, 255)', 
+	'rgb(0, 51, 204)', 'rgb(0, 102, 255)', 'rgb(102, 102, 255)', 'rgb(102, 0, 204)', 'rgb(204, 102, 255)'];
 	var random = Math.floor(Math.random() * Math.floor(colors.length));
 	return colors[random];
 }
@@ -93,7 +104,8 @@ function showHikeOnMap(hike) {
 		var pointParent = new L.LatLng(latitude, longitude);
 		var date = new Date(Number(jsonObservationPoints[i].timeOfObservationPoint));
 		var marker = L.marker(pointParent, {icon: darkBlueIcon});
-		marker.bindPopup("<b>Punkt "+jsonObservationPoints[i].pointId+"</b><br>Kl. "+date.format("HH:MM")+"<br>Sau sett: "+jsonObservationPoints[i].sheepCount);
+		marker.bindPopup("<b>Punkt "+jsonObservationPoints[i].pointId+"</b><br>Kl. "+date.format("HH:MM")+"<br>Sau sett: "+
+			jsonObservationPoints[i].sheepCount);
 		mapItems.push(marker);
 		totalSheepCount+=Number(jsonObservationPoints[i].sheepCount);
 		//Decode observations
@@ -104,14 +116,17 @@ function showHikeOnMap(hike) {
 			var pointChild = new L.LatLng(latitude, longitude);
 			var marker = L.marker(pointChild, {icon: blueIcon});
 			mapItems.push(marker);
-			marker.bindPopup("<b>Observasjon "+observationList[j].observationId+"</b><br>Type: "+observationList[j].typeOfObservation+"<br>Antall: "+observationList[j].sheepCount);
+			marker.bindPopup("<b>Observasjon "+observationList[j].observationId+"</b><br>Type: "+observationList[j].typeOfObservation+
+				"<br>Antall: "+observationList[j].sheepCount);
 			// Add polyline between observation point and observation
 			var line = new L.Polyline([pointParent,pointChild], {
 			    color: polylineColor,
 			    weight: 3,
 			    opacity: 0.8,
 			    smoothFactor: 1
-			}).bindPopup('<b>Punkt '+jsonObservationPoints[i].pointId+' kl. '+date.format("HH:MM")+'</b><br>Observasjon '+observationList[j].observationId+'<br><b>Sau sett:</b> '+observationList[j].sheepCount+'<br><b>Type:</b> '+observationList[j].typeOfObservation);
+			}).bindPopup('<b>Punkt '+jsonObservationPoints[i].pointId+' kl. '+date.format("HH:MM")+'</b><br>Observasjon '+
+			observationList[j].observationId+'<br><b>Sau sett:</b> '+observationList[j].sheepCount+'<br><b>Type:</b> '+
+			observationList[j].typeOfObservation);
 			mapItems.push(line);
 		}
 	}
@@ -138,7 +153,9 @@ function showHikeOnMap(hike) {
 	    weight: 4,
 	    opacity: 0.8,
 	    smoothFactor: 1
-	}).bindPopup('<b>'+title+'</b><br>'+dateStart.format("dd/mm/yyyy HH:MM")+'-'+dateEnd.format('HH:MM')+'<br><b>Gjeter:</b> '+name+'<br><b>Deltakere:</b> '+participants+'<br><b>Antall sau sett:</b> '+totalSheepCount+'<br><b>Vær:</b> '+weather+'<br><b>Distanse:</b> '+distance+'<br><b>Detaljer:</b> '+description);
+	}).bindPopup('<b>'+title+'</b><br>'+dateStart.format("dd/mm/yyyy HH:MM")+'-'+dateEnd.format('HH:MM')+'<br><b>Gjeter:</b> '+
+	name+'<br><b>Deltakere:</b> '+participants+'<br><b>Antall sau sett:</b> '+totalSheepCount+'<br><b>Vær:</b> '+weather+
+	'<br><b>Distanse:</b> '+distance+'<br><b>Detaljer:</b> '+description);
 	mapItems.push(trackPolyline);
 	mymap.fitBounds(trackPolyline.getBounds());
 
@@ -153,11 +170,15 @@ $.ajax({
 	type: "GET",
 	success: function (data) {
 		var hike = JSON.parse(data);
-		//Get checkbox id for the hike and check it
-		var checkboxId = '#'+hike.id;
-		$(checkboxId).prop('checked', true);
-		//Show the hike on the map
-		showHikeOnMap(hike);
+		if (hike.error == 'error') {
+			alert("Ingen nylig tur å vise");
+		} else {
+			//Get checkbox id for the hike and check it
+			var checkboxId = '#'+hike.id;
+			$(checkboxId).prop('checked', true);
+			//Show the hike on the map
+			showHikeOnMap(hike);
+		}
 	},
 	error: function(xhr, ajaxOptions, thrownError){
 		alert("Kunne ikke laste inn turdata");
@@ -223,7 +244,11 @@ $('#hikes-list').on('change', 'input[type="checkbox"]', function() {
 			success: function (data) {
 				//Show the checked hike on the map
 				var hike = JSON.parse(data);
-				showHikeOnMap(hike);
+				if (hike.error == 'error') {
+					alert("Ingen tur å vise");
+				} else {
+					showHikeOnMap(hike);
+				}
 			},
 			error: function(xhr, ajaxOptions, thrownError){
 				alert("Error");

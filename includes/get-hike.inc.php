@@ -30,5 +30,6 @@ if ($resultCheck == 1) {
 
 	echo json_encode($hike);
 } else {
-	echo json_encode('error');
+	$json['error']='error';
+	echo json_encode($json);
 }

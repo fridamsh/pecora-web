@@ -21,5 +21,6 @@ if ($resultCheck > 0) {
 	}
 	echo json_encode($hikes);
 } else {
-	echo json_encode('error');
+	$json['error']='error';
+	echo json_encode($json);
 }

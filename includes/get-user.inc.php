@@ -16,8 +16,9 @@ if ($resultCheck == 1) {
 	$json['lastname'] = $row['user_last'];
 	$json['email'] = $row['user_email'];
 	$json['username'] = $row['user_uid'];
-	
+
 	echo json_encode($json);
 } else {
-	echo json_encode('error');
+	$json['error']='error';
+	echo json_encode($json);
 }
