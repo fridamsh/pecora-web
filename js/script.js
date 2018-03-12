@@ -20,118 +20,35 @@ $.ajax({
 		$("#profile-data").append(newHTML);
 	},
 	error: function(xhr, ajaxOptions, thrownError){
-		alert("Error");
+		alert("Kunne ikke laste inn brukerdata");
 	},
 	timeout: 15000 //timeout of the ajax call
 });
 
-var redIcon = L.icon({
-    iconUrl: 'img/marker-icon-2x-red-2.png',
-    iconSize: [25, 41],
-    iconAnchor: [13, 40],
-    popupAnchor: [0, -33],
-    shadowUrl: 'img/marker-shadow.png',
-    shadowSize: [41, 41],
-    shadowAnchor: [13, 40]
+$.ajax({
+	url: "includes/get-data.inc.php",
+	type: "GET",
+	success: function (data) {
+		var obj = JSON.parse(data);
+		if (obj == 'error') {
+			alert("Ingen turer å vise");
+		} else {
+			for (var k = 0; k < obj.length; k++) {
+				var id = obj[k].id;
+				var title = obj[k].title;
+		    	var startdate = obj[k].startdate;
+		    	var dateStart = new Date(Number(startdate));
+				//Add hikes to dates page
+				var newHTML = '<li><input type="checkbox" id="'+id+'"/> '+title+' '+dateStart.format("dd/mm/yyyy HH:MM")+'</li>';
+				$("#hikes-list").append(newHTML);
+	    	}
+		}
+	},
+	error: function(xhr, ajaxOptions, thrownError){
+		alert("Kunne ikke laste inn turdata");
+	},
+	timeout: 15000 //timeout of the ajax call
 });
-var blueIcon = L.icon({
-    iconUrl: 'img/marker-icon-2x-blue.png',
-    iconSize: [25, 41],
-    iconAnchor: [13, 40],
-    popupAnchor: [0, -33],
-    shadowUrl: 'img/marker-shadow.png',
-    shadowSize: [41, 41],
-    shadowAnchor: [13, 40]
-});
-
-var startIcon = L.icon({
-    iconUrl: 'img/marker-icon-start.png',
-    iconSize: [20, 20],
-    iconAnchor: [10, 10],
-    popupAnchor: [0, -5],
-    shadowUrl: 'img/shadow.png',
-    shadowSize: [20, 20],
-    shadowAnchor: [7, 11]
-});
-var stopIcon = L.icon({
-    iconUrl: 'img/marker-icon-stop.png',
-    iconSize: [20, 20],
-    iconAnchor: [10, 10],
-    popupAnchor: [0, -5],
-    shadowUrl: 'img/shadow.png',
-    shadowSize: [20, 20],
-    shadowAnchor: [7, 11]
-});
-
-function reqListener () {
-  console.log(this.responseText);
-}
-
-var oReq = new XMLHttpRequest(); //New request object
-oReq.onload = function() {
-	var obj = JSON.parse(this.responseText);
-	if (obj == 'error') {
-		alert("Ingen turer å vise");
-	} else {
-		for (var k = 0; k < obj.length; k++) {
-			var id = obj[k].id;
-			var title = obj[k].title;
-	    	var name = obj[k].name;
-	    	var participants = obj[k].participants;
-	    	var weather = obj[k].weather;
-	    	var description = obj[k].description;
-	    	var startdate = obj[k].startdate;
-	    	var dateStart = new Date(Number(startdate));
-	    	var enddate = obj[k].enddate;
-	    	var dateEnd = new Date(Number(enddate));
-	    	var mapfile = obj[k].mapfile;
-	    	var distance = obj[k].distance;
-	    	var userId = obj[k].userId;
-	    	var localId = obj[k].localId;
-	    	var observationPoints = obj[k].observationPoints;
-	    	var track = obj[k].track;
-
-			//Add hikes to dates page
-			var newHTML = '<li><input type="checkbox" id="'+id+'"/> '+title+' '+dateStart.format("dd/mm/yyyy HH:MM")+'</li>';
-			$("#hikes-list").append(newHTML);
-    	}
-	}
-};
-oReq.open("get", "includes/get-data.inc.php", true);
-oReq.send();
-
-$('#hikes-list').on('change', 'input[type="checkbox"]', function() {
-    var hikeId = $(this).attr('id');
-    if (this.checked) {
-    	var json = {"hikeId": hikeId};
-    	$.ajax({
-			url: "includes/get-hike.inc.php",
-			type: "POST",
-			data: json,
-			success: function (data) {
-				//Show the checked hike on the map
-				var hike = JSON.parse(data);
-				showHikeOnMap(hike);
-			},
-			error: function(xhr, ajaxOptions, thrownError){
-				alert("Error");
-			},
-			timeout: 15000 //timeout of the ajax call
-		});
-    } else {
-    	// Hide the unchecked hike
-    	removeHikeFromMap(hikeId);
-    }
-});
-
-function removeHikeFromMap(hikeId) {
-	//Remove the hike from the map
-	layer.eachLayer(function (layerInGroup) {
-	    if (layerInGroup.id === hikeId) {
-	    	layer.removeLayer(layerInGroup);
-	    }
-	});
-}
 
 function showHikeOnMap(hike) {
 	var id = hike.id;
@@ -215,4 +132,92 @@ function showHikeOnMap(hike) {
 	var layer2 = L.layerGroup(mapItems);
 	layer2.id = id;
 	layer.addLayer(layer2);
+}
+
+$.ajax({
+	url: "includes/get-most-recent-hike.inc.php",
+	type: "GET",
+	success: function (data) {
+		var hike = JSON.parse(data);
+		//Get checkbox id for the hike and check it
+		var checkboxId = '#'+hike.id;
+		$(checkboxId).prop('checked', true);
+		//Show the hike on the map
+		showHikeOnMap(hike);
+	},
+	error: function(xhr, ajaxOptions, thrownError){
+		alert("Kunne ikke laste inn turdata");
+	},
+	timeout: 15000 //timeout of the ajax call
+});
+
+var redIcon = L.icon({
+    iconUrl: 'img/marker-icon-2x-red-2.png',
+    iconSize: [25, 41],
+    iconAnchor: [13, 40],
+    popupAnchor: [0, -33],
+    shadowUrl: 'img/marker-shadow.png',
+    shadowSize: [41, 41],
+    shadowAnchor: [13, 40]
+});
+var blueIcon = L.icon({
+    iconUrl: 'img/marker-icon-2x-blue.png',
+    iconSize: [25, 41],
+    iconAnchor: [13, 40],
+    popupAnchor: [0, -33],
+    shadowUrl: 'img/marker-shadow.png',
+    shadowSize: [41, 41],
+    shadowAnchor: [13, 40]
+});
+
+var startIcon = L.icon({
+    iconUrl: 'img/marker-icon-start.png',
+    iconSize: [20, 20],
+    iconAnchor: [10, 10],
+    popupAnchor: [0, -5],
+    shadowUrl: 'img/shadow.png',
+    shadowSize: [20, 20],
+    shadowAnchor: [7, 11]
+});
+var stopIcon = L.icon({
+    iconUrl: 'img/marker-icon-stop.png',
+    iconSize: [20, 20],
+    iconAnchor: [10, 10],
+    popupAnchor: [0, -5],
+    shadowUrl: 'img/shadow.png',
+    shadowSize: [20, 20],
+    shadowAnchor: [7, 11]
+});
+
+$('#hikes-list').on('change', 'input[type="checkbox"]', function() {
+    var hikeId = $(this).attr('id');
+    if (this.checked) {
+    	var json = {"hikeId": hikeId};
+    	$.ajax({
+			url: "includes/get-hike.inc.php",
+			type: "POST",
+			data: json,
+			success: function (data) {
+				//Show the checked hike on the map
+				var hike = JSON.parse(data);
+				showHikeOnMap(hike);
+			},
+			error: function(xhr, ajaxOptions, thrownError){
+				alert("Error");
+			},
+			timeout: 15000 //timeout of the ajax call
+		});
+    } else {
+    	// Hide the unchecked hike
+    	removeHikeFromMap(hikeId);
+    }
+});
+
+function removeHikeFromMap(hikeId) {
+	//Remove the hike from the map
+	layer.eachLayer(function (layerInGroup) {
+	    if (layerInGroup.id === hikeId) {
+	    	layer.removeLayer(layerInGroup);
+	    }
+	});
 }

@@ -6,13 +6,13 @@ include '../models/Hike.php';
 
 $userId = $_SESSION['u_id'];
 
-$sql2 = "SELECT * FROM hike WHERE userId=$userId;";
-$result2 = mysqli_query($conn, $sql2);
-$resultCheck2 = mysqli_num_rows($result2);
+$sql = "SELECT * FROM hike WHERE userId=$userId;";
+$result = mysqli_query($conn, $sql);
+$resultCheck = mysqli_num_rows($result);
 
-if ($resultCheck2 > 0) {
+if ($resultCheck > 0) {
 	$hikes = array();
-	while ($row = mysqli_fetch_assoc($result2)) {
+	while ($row = mysqli_fetch_assoc($result)) {
 		$hike = new Hike();
 		$hike->set_id($row['id']);
 		$hike->set_title($row['title']);

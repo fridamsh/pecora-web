@@ -55,6 +55,12 @@
         	line-height: 30px;
         	font-size: 11pt;
         }
+        h2 {
+        	font-size: 18pt;
+        }
+        h3 {
+        	font-size: 13pt;
+        }
         #home p, li {
         	color: #000;
         	line-height: 25px;
@@ -65,12 +71,6 @@
         }
         #settings ul {
         	margin-left: 20px;
-        }
-        h2 {
-        	font-size: 18pt;
-        }
-        h3 {
-        	font-size: 13pt;
         }
         #dates li {
         	line-height: 30px;
@@ -120,7 +120,6 @@
 			padding: 20px 0;
 		}
 	</style>
-
 </head>
 <body>
 	<?php
@@ -131,7 +130,6 @@
 			exit();
 		}
 	?>
-
 	<div id="mapwrap">
 		<div id="sidebar" class="sidebar collapsed">
 	        <!-- Nav tabs -->
