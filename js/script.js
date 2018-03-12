@@ -50,6 +50,19 @@ $.ajax({
 	timeout: 15000 //timeout of the ajax call
 });
 
+function createRandomColor() {
+	/*var color;
+	var r = Math.floor(Math.random() * 200);
+	var g = Math.floor(Math.random() * 200);
+	var b = Math.floor(Math.random() * 200);
+	color = "rgb(" + r + "," + g + "," + b + ")";*/
+
+	//Defined a list with some nice colors, can add here if I want
+	var colors = ['rgb(255, 0, 0)', 'rgb(255, 102, 0)', 'rgb(255, 0, 102)', 'rgb(204, 0, 153)', 'rgb(204, 102, 0)', 'rgb(255, 255, 0)', 'rgb(255, 204, 0)', 'rgb(204, 255, 51)', 'rgb(153, 255, 51)', 'rgb(102, 153, 0)', 'rgb(0, 153, 0)', 'rgb(51, 204, 51)', 'rgb(0, 204, 102)', 'rgb(0, 204, 153)', 'rgb(0, 153, 153)', 'rgb(0, 255, 204)', 'rgb(51, 204, 204)', 'rgb(0, 102, 153)', 'rgb(0, 204, 255)', 'rgb(0, 51, 204)', 'rgb(0, 102, 255)', 'rgb(102, 102, 255)', 'rgb(102, 0, 204)', 'rgb(204, 102, 255)'];
+	var random = Math.floor(Math.random() * Math.floor(colors.length));
+	return colors[random];
+}
+
 function showHikeOnMap(hike) {
 	var id = hike.id;
 	var title = hike.title;
@@ -69,6 +82,7 @@ function showHikeOnMap(hike) {
 	var track = hike.track;
 
 	mapItems = [];
+	var polylineColor = createRandomColor();
 
 	//Decode observation points
 	var jsonObservationPoints = JSON.parse(observationPoints);
@@ -78,8 +92,8 @@ function showHikeOnMap(hike) {
 		var longitude = Number(jsonObservationPoints[i].locationPoint.mLongitude);
 		var pointParent = new L.LatLng(latitude, longitude);
 		var date = new Date(Number(jsonObservationPoints[i].timeOfObservationPoint));
-		var marker = L.marker(pointParent, {icon: redIcon});
-		marker.bindPopup("<b>Observasjonspunkt "+jsonObservationPoints[i].pointId+"</b><br>Kl. "+date.format("HH:MM")+"<br>Sau sett: "+jsonObservationPoints[i].sheepCount);
+		var marker = L.marker(pointParent, {icon: darkBlueIcon});
+		marker.bindPopup("<b>Punkt "+jsonObservationPoints[i].pointId+"</b><br>Kl. "+date.format("HH:MM")+"<br>Sau sett: "+jsonObservationPoints[i].sheepCount);
 		mapItems.push(marker);
 		totalSheepCount+=Number(jsonObservationPoints[i].sheepCount);
 		//Decode observations
@@ -93,11 +107,11 @@ function showHikeOnMap(hike) {
 			marker.bindPopup("<b>Observasjon "+observationList[j].observationId+"</b><br>Type: "+observationList[j].typeOfObservation+"<br>Antall: "+observationList[j].sheepCount);
 			// Add polyline between observation point and observation
 			var line = new L.Polyline([pointParent,pointChild], {
-			    color: 'blue',
+			    color: polylineColor,
 			    weight: 3,
 			    opacity: 0.8,
 			    smoothFactor: 1
-			});
+			}).bindPopup('<b>Punkt '+jsonObservationPoints[i].pointId+' kl. '+date.format("HH:MM")+'</b><br>Observasjon '+observationList[j].observationId+'<br><b>Sau sett:</b> '+observationList[j].sheepCount+'<br><b>Type:</b> '+observationList[j].typeOfObservation);
 			mapItems.push(line);
 		}
 	}
@@ -120,7 +134,7 @@ function showHikeOnMap(hike) {
 	mapItems.push(markerEnd);
 
 	var trackPolyline = new L.Polyline(trackPointList, {
-	    color: 'red',
+	    color: polylineColor,
 	    weight: 4,
 	    opacity: 0.8,
 	    smoothFactor: 1
@@ -162,6 +176,15 @@ var redIcon = L.icon({
 });
 var blueIcon = L.icon({
     iconUrl: 'img/marker-icon-2x-blue.png',
+    iconSize: [25, 41],
+    iconAnchor: [13, 40],
+    popupAnchor: [0, -33],
+    shadowUrl: 'img/marker-shadow.png',
+    shadowSize: [41, 41],
+    shadowAnchor: [13, 40]
+});
+var darkBlueIcon = L.icon({
+    iconUrl: 'img/marker-icon-2x-dark-blue.png',
     iconSize: [25, 41],
     iconAnchor: [13, 40],
     popupAnchor: [0, -33],
