@@ -24,8 +24,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 		mysqli_close($conn);
 	} else {
 		$sql = "INSERT INTO hike (title, name, participants, weather, description, startdate, enddate, mapfile, distance, observationPoints, track, userId, localId) VALUES ('$title', '$name', '$participants', '$weather', '$description', '$startdate', '$enddate', '$mapfile', '$distance', '$observationPoints', '$track', '$userId', '$localId');";
-
 		$result = mysqli_query($conn, $sql);
+		
 		if ($result == 1 ) {
 			$json['success'] = 'Tur synkronisert';
 		} else {

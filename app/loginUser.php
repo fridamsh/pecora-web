@@ -4,7 +4,6 @@ include_once '../includes/dbh.inc.php';
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
 	$uid = mysqli_real_escape_string($conn, $_POST['username']);
 	$pwd = mysqli_real_escape_string($conn, $_POST['password']);
-
 	//Error handlers
 	//Check if inputs are empty
 	if (empty($uid) || empty($pwd)) {
@@ -31,9 +30,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 					echo json_encode($json);
 					mysqli_close($conn);
 				} elseif ($hashedPwdChecked == true) {
-					//Log in the user here
-					//$json['success'] = $row['user_id'] . ' ' . $row['user_first'] . ' ' . $row['user_last'] . ' ' . $row['user_email'] . ' ' . $row['user_uid'] . ' Welcome ' . $row['user_first'];
-					$json['success'] = 'Success';
+					//Log in the user here and echo the user data
+					$json['success'] = 'success';
 					$json['id'] = $row['user_id'];
 					$json['first'] = $row['user_first'];
 					$json['last'] = $row['user_last'];
