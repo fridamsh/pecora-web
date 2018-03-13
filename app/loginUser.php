@@ -32,7 +32,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 					mysqli_close($conn);
 				} elseif ($hashedPwdChecked == true) {
 					//Log in the user here
-					$json['success'] = $row['user_id'] . ' ' . $row['user_first'] . ' ' . $row['user_last'] . ' ' . $row['user_email'] . ' ' . $row['user_uid'] . ' Welcome ' . $row['user_first'];
+					//$json['success'] = $row['user_id'] . ' ' . $row['user_first'] . ' ' . $row['user_last'] . ' ' . $row['user_email'] . ' ' . $row['user_uid'] . ' Welcome ' . $row['user_first'];
+					$json['success'] = 'Success';
+					$json['id'] = $row['user_id'];
+					$json['first'] = $row['user_first'];
+					$json['last'] = $row['user_last'];
+					$json['email'] = $row['user_email'];
+					$json['username'] = $row['user_uid'];
 					echo json_encode($json);
 					mysqli_close($conn);
 				}
