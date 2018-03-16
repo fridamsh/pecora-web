@@ -18,17 +18,27 @@
 	<!-- Leaflet javascript -->
 	<script src="https://unpkg.com/leaflet@1.0.1/dist/leaflet.js"></script>
 
-	<!-- Latest compiled and minified CSS -->
+	<!-- Latest compiled and minified Boostrap CSS -->
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
 
 	<!-- jQuery library -->
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 
-	<!-- Latest compiled JavaScript -->
-	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+	<!-- moment.js -->
+	<script src="moment/js/moment.js"></script>
+	<script src="moment/locale/nb.js"></script>
+
+	<!-- Latest compiled Bootstrap JavaScript -->
+	<script src="bootstrap/dist/bootstrap.min.js"></script>
+	<script src="bootstrap/js/transition.js"></script>
+	<script src="bootstrap/js/collapse.js"></script>
+
+	<!-- Boostrap DatetimePicker JS og CSS -->
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.47/js/bootstrap-datetimepicker.min.js"></script>
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.47/css/bootstrap-datetimepicker.min.css"></link>
 
 	<!-- Font awesome -->
-    <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
+    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
 
     <!-- Sidebar -->
     <link rel="stylesheet" href="css/leaflet-sidebar.css" />
@@ -99,6 +109,10 @@
         }
         .logout-div button:hover {
         	background-color: #26A69A;
+        	border-color: #00897B;
+        }
+        .logout-div button:focus {
+        	background-color: #009688;
         	border-color: #00897B;
         }
         #profile-div {
@@ -181,7 +195,39 @@
 	            <div class="sidebar-pane" id="dates">
 	                <h1 class="sidebar-header">Datoer<span class="sidebar-close"><i class="fa fa-caret-left"></i></span></h1>
 	                <h3 style="margin-bottom: 10px;">Velg turene du vil se på kartet:</h3>
-	                <ul id="hikes-list"></ul>
+
+	                <span style="white-space:nowrap">
+					    <label for="id1">Fra</label>
+					    <div class="form-group">
+				            <div class='input-group date' id='datetimepicker1'>
+				                <input type='text' class="form-control" />
+				                <span class="input-group-addon">
+				                    <span class="glyphicon glyphicon-calendar"></span>
+				                </span>
+				            </div>
+				        </div>
+					</span>
+					<span style="white-space:nowrap">
+					    <label for="id1">Til</label>
+					    <div class="form-group">
+				            <div class='input-group date' id='datetimepicker2'>
+				                <input type='text' class="form-control" />
+				                <span class="input-group-addon">
+				                    <span class="glyphicon glyphicon-calendar"></span>
+				                </span>
+				            </div>
+				        </div>
+					</span>
+					<span style="white-space:nowrap" class="logout-div">
+					    <button id="intervalBtn" type="submit" class="btn btn-primary">Se turer</button>
+					    <button id="resetBtn" type="submit" class="btn btn-primary">Tilbakestill</button>
+					</span>
+
+					<ul id="hikes-interval-list" style="margin-top: 10px;"></ul>
+
+	                <!--<ul id="hikes-list"></ul>-->
+	                
+
 	            </div>
 
 	            <div class="sidebar-pane" id="settings">

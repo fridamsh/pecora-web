@@ -6,7 +6,7 @@ include '../models/Hike.php';
 
 $userId = $_SESSION['u_id'];
 
-$sql = "SELECT * FROM hike WHERE userId=$userId ORDER BY startdate DESC;";
+$sql = "SELECT * FROM hike WHERE userId=$userId ORDER BY startdate DESC LIMIT 5;";
 $result = mysqli_query($conn, $sql);
 $resultCheck = mysqli_num_rows($result);
 

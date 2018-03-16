@@ -26,44 +26,65 @@ $.ajax({
 		}
 	},
 	error: function(xhr, ajaxOptions, thrownError){
-		alert("Kunne ikke laste inn brukerdata");
+		alert("AJAX Error - Kunne ikke laste inn brukerdata");
 	},
 	timeout: 15000 //timeout of the ajax call
 });
 
-$.ajax({
-	url: "includes/get-data.inc.php",
-	type: "GET",
-	success: function (data) {
-		var obj = JSON.parse(data);
-		if (obj.error == 'error') {
-			var newHTML = '<li><i>Ingen turer å vise</i></li>';
-			$("#hikes-list").append(newHTML);
-		} else {
-			for (var k = 0; k < obj.length; k++) {
-				var id = obj[k].id;
-				var title = obj[k].title;
-		    	var startdate = obj[k].startdate;
-		    	var dateStart = new Date(Number(startdate));
-				//Add hikes to the dates page
-				var newHTML = '<li><input type="checkbox" id="'+id+'"/> '+title+' '+dateStart.format("dd/mm/yyyy HH:MM")+'</li>';
-				$("#hikes-list").append(newHTML);
-	    	}
-		}
-	},
-	error: function(xhr, ajaxOptions, thrownError){
-		alert("Kunne ikke laste inn turdata");
-	},
-	timeout: 15000 //timeout of the ajax call
+$(function () {
+    $('#datetimepicker1').datetimepicker();
+    $('#datetimepicker2').datetimepicker({
+        useCurrent: false //Important! See issue #1075
+    });
+    $("#datetimepicker1").on("dp.change", function (e) {
+        $('#datetimepicker2').data("DateTimePicker").minDate(e.date);
+    });
+    $("#datetimepicker2").on("dp.change", function (e) {
+        $('#datetimepicker1').data("DateTimePicker").maxDate(e.date);
+    });
 });
+
+function getMostRecentHikes() {
+	$.ajax({
+		url: "includes/get-data.inc.php",
+		type: "GET",
+		success: function (data) {
+			var obj = JSON.parse(data);
+			if (obj.error == 'error') {
+				var newHTML = '<li><i>Ingen turer å vise</i></li>';
+				$("#hikes-list").append(newHTML);
+			} else {
+				for (var k = 0; k < obj.length; k++) {
+					var id = obj[k].id;
+					var title = obj[k].title;
+			    	var startdate = obj[k].startdate;
+			    	var dateStart = new Date(Number(startdate));
+			    	if (k == 0) {
+			    		$('#datetimepicker2').datetimepicker({
+				            defaultDate: dateStart
+				        });
+			    	}
+			    	if (k == obj.length-1) {
+			    		$('#datetimepicker1').datetimepicker({
+				            defaultDate: dateStart
+				        });
+			    	}
+					//Add hikes to the dates page
+					var newHTML = '<li><input type="checkbox" id="'+id+'"/> '+title+' '+dateStart.format("dd/mm/yyyy HH:MM")+'</li>';
+					$("#hikes-interval-list").append(newHTML);
+		    	}
+			}
+		},
+		error: function(xhr, ajaxOptions, thrownError){
+			alert("AJAX Error - Kunne ikke laste inn turdata");
+		},
+		timeout: 15000 //timeout of the ajax call
+	});
+}
+
+getMostRecentHikes();
 
 function createRandomColor() {
-	/*var color;
-	var r = Math.floor(Math.random() * 255);
-	var g = Math.floor(Math.random() * 255);
-	var b = Math.floor(Math.random() * 255);
-	color = "rgb(" + r + "," + g + "," + b + ")";*/
-
 	//Defined a list with some nice colors, can add here if I want
 	var colors = ['rgb(255, 0, 0)', 'rgb(255, 102, 0)', 'rgb(255, 0, 102)', 'rgb(204, 0, 153)', 
 	'rgb(204, 102, 0)', 'rgb(255, 255, 0)', 'rgb(255, 204, 0)', 'rgb(204, 255, 51)', 'rgb(153, 255, 51)', 
@@ -181,7 +202,7 @@ $.ajax({
 		}
 	},
 	error: function(xhr, ajaxOptions, thrownError){
-		alert("Kunne ikke laste inn turdata");
+		alert("AJAX Error - Kunne ikke laste inn turdata");
 	},
 	timeout: 15000 //timeout of the ajax call
 });
@@ -251,7 +272,7 @@ $('#hikes-list').on('change', 'input[type="checkbox"]', function() {
 				}
 			},
 			error: function(xhr, ajaxOptions, thrownError){
-				alert("Error");
+				alert("AJAX Error");
 			},
 			timeout: 15000 //timeout of the ajax call
 		});
@@ -269,3 +290,87 @@ function removeHikeFromMap(hikeId) {
 	    }
 	});
 }
+
+function removeHikesFromMap() {
+	//Remove the hike from the map
+	layer.eachLayer(function (layerInGroup) {
+		layer.removeLayer(layerInGroup);
+	});
+}
+
+$('#intervalBtn').on('click', function() {
+	//Reset list
+	$("#hikes-interval-list").html("");
+	//Remove layers from map
+	removeHikesFromMap();
+	//Get dates from date pickers
+	var fromDate = new Date($('#datetimepicker1').data("DateTimePicker").date()).getTime();
+	var toDate = new Date($('#datetimepicker2').data("DateTimePicker").date()).getTime();
+	//Create post data
+	var json = {"from": fromDate, "to": toDate};
+	$.ajax({
+		url: "includes/get-hike-interval.inc.php",
+		type: "POST",
+		data: json,
+		success: function (data) {
+			var obj = JSON.parse(data);
+			if (obj.error == 'error') {
+				alert("Ingen turer å vise i dette intervallet");
+			} else {
+				//Show hikes within interval in a list
+				for (var i = 0; i < obj.length; i++) {
+					var id = obj[i].id;
+					var title = obj[i].title;
+			    	var startdate = obj[i].startdate;
+			    	var dateStart = new Date(Number(startdate));
+					//Add hikes to the dates page
+					var newHTML = '<li><input type="checkbox" id="'+id+'"/> '+title+' '+dateStart.format("dd/mm/yyyy HH:MM")+'</li>';
+					$("#hikes-interval-list").append(newHTML);
+		    	}
+			}
+		},
+		error: function(xhr, ajaxOptions, thrownError){
+			alert("AJAX Error");
+		},
+		timeout: 15000 //timeout of the ajax call
+	});
+});
+
+$('#hikes-interval-list').on('change', 'input[type="checkbox"]', function() {
+	//Get the id of the checkbox which is the hike id
+    var hikeId = $(this).attr('id');
+    //If it is checked, retrieve hike data from database
+    if (this.checked) {
+    	var json = {"hikeId": hikeId};
+    	$.ajax({
+			url: "includes/get-hike.inc.php",
+			type: "POST",
+			data: json,
+			success: function (data) {
+				//Show the checked hike on the map
+				var hike = JSON.parse(data);
+				if (hike.error == 'error') {
+					alert("Ingen tur å vise");
+				} else {
+					showHikeOnMap(hike);
+				}
+			},
+			error: function(xhr, ajaxOptions, thrownError){
+				alert("AJAX Error");
+			},
+			timeout: 15000 //timeout of the ajax call
+		});
+    } else {
+    	//Hide the unchecked hike
+    	removeHikeFromMap(hikeId);
+    }
+});
+
+$('#resetBtn').on('click', function() {
+	//Reset hikes interval list and regenerate the default list
+	$("#hikes-interval-list").html("");
+	//Remove hikes from map
+	removeHikesFromMap();
+	//Get the most recent hikes
+	getMostRecentHikes();
+});
