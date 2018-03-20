@@ -152,7 +152,8 @@ function showHikeOnMap(hike) {
 			if (observationList[j].typeOfObservation == 'Sau') {
 				marker.bindPopup("<b>Observasjon "+observationList[j].observationId+
 				"</b><br><b>Type:</b> "+observationList[j].typeOfObservation+
-				"<br><b>Antall:</b> "+observationList[j].sheepCount);
+				"<br><b>Antall:</b> "+observationList[j].sheepCount+
+				"<br><b>Detaljer:</b> "+observationList[j].details);
 			} else {
 				marker.bindPopup("<b>Observasjon "+observationList[j].observationId+
 				"</b><br><b>Type:</b> "+observationList[j].typeOfObservation+
