@@ -129,7 +129,7 @@ function showHikeOnMap(hike) {
 		var longitude = Number(jsonObservationPoints[i].locationPoint.mLongitude);
 		var pointParent = new L.LatLng(latitude, longitude);
 		var date = new Date(Number(jsonObservationPoints[i].timeOfObservationPoint));
-		var marker = L.marker(pointParent, {icon: darkBlueIcon});
+		var marker = L.marker(pointParent, {icon: redIcon});
 		marker.bindPopup("<b>Punkt "+jsonObservationPoints[i].pointId+"</b><br>Kl. "+date.format("HH:MM")+"<br>Sau sett: "+
 			jsonObservationPoints[i].sheepCount);
 		mapItems.push(marker);
