@@ -95,6 +95,10 @@ function createRandomColor() {
 	return colors[random];
 }
 
+/*function makeColorDarker(color) {
+	alert(color);
+}*/
+
 function showHikeOnMap(hike) {
 	var id = hike.id;
 	var title = hike.title;
@@ -115,6 +119,7 @@ function showHikeOnMap(hike) {
 
 	mapItems = [];
 	var polylineColor = createRandomColor();
+	//var darkerPolylineColor = makeColorDarker(polylineColor);
 
 	//Decode observation points
 	var jsonObservationPoints = JSON.parse(observationPoints);
@@ -143,7 +148,7 @@ function showHikeOnMap(hike) {
 			var line = new L.Polyline([pointParent,pointChild], {
 			    color: polylineColor,
 			    weight: 3,
-			    opacity: 0.8,
+			    opacity: 0.4,
 			    smoothFactor: 1
 			}).bindPopup('<b>Punkt '+jsonObservationPoints[i].pointId+' kl. '+date.format("HH:MM")+'</b><br>Observasjon '+
 			observationList[j].observationId+'<br><b>Sau sett:</b> '+observationList[j].sheepCount+'<br><b>Type:</b> '+
@@ -172,7 +177,7 @@ function showHikeOnMap(hike) {
 	var trackPolyline = new L.Polyline(trackPointList, {
 	    color: polylineColor,
 	    weight: 4,
-	    opacity: 0.8,
+	    opacity: 0.9,
 	    smoothFactor: 1
 	}).bindPopup('<b>'+title+'</b><br>'+dateStart.format("dd/mm/yyyy HH:MM")+'-'+dateEnd.format('HH:MM')+'<br><b>Gjeter:</b> '+
 	name+'<br><b>Deltakere:</b> '+participants+'<br><b>Antall sau sett:</b> '+totalSheepCount+'<br><b>Vær:</b> '+weather+
@@ -218,12 +223,12 @@ var redIcon = L.icon({
 });
 var blueIcon = L.icon({
     iconUrl: 'img/marker-icon-2x-blue.png',
-    iconSize: [25, 41],
-    iconAnchor: [13, 40],
-    popupAnchor: [0, -33],
+    iconSize: [20, 36],
+    iconAnchor: [10, 35],
+    popupAnchor: [0, -28],
     shadowUrl: 'img/marker-shadow.png',
-    shadowSize: [41, 41],
-    shadowAnchor: [13, 40]
+    shadowSize: [36, 36],
+    shadowAnchor: [11, 35]
 });
 var darkBlueIcon = L.icon({
     iconUrl: 'img/marker-icon-2x-dark-blue.png',
