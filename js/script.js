@@ -129,30 +129,46 @@ function showHikeOnMap(hike) {
 		var longitude = Number(jsonObservationPoints[i].locationPoint.mLongitude);
 		var pointParent = new L.LatLng(latitude, longitude);
 		var date = new Date(Number(jsonObservationPoints[i].timeOfObservationPoint));
+		var observationList = jsonObservationPoints[i].observationList;
 		var marker = L.marker(pointParent, {icon: redIcon});
-		marker.bindPopup("<b>Punkt "+jsonObservationPoints[i].pointId+"</b><br>Kl. "+date.format("HH:MM")+"<br>Sau sett: "+
-			jsonObservationPoints[i].sheepCount);
+		if (observationList.length == 1) {
+			marker.bindPopup("<b>Punkt "+jsonObservationPoints[i].pointId+" kl. "+date.format("HH:MM")+
+			"</b><br><i>"+observationList.length+" observasjon</i>"+
+			"<br><b>Sau sett:</b> "+jsonObservationPoints[i].sheepCount);
+		} else {
+			marker.bindPopup("<b>Punkt "+jsonObservationPoints[i].pointId+" kl. "+date.format("HH:MM")+
+			"</b><br><i>"+observationList.length+" observasjoner</i>"+
+			"<br><b>Sau sett:</b> "+jsonObservationPoints[i].sheepCount);
+		}
 		mapItems.push(marker);
 		totalSheepCount+=Number(jsonObservationPoints[i].sheepCount);
 		//Decode observations
-		var observationList = jsonObservationPoints[i].observationList;
 		for (var j = 0; j < observationList.length; j++) {
 			var latitude = Number(observationList[j].locationObservation.mLatitude);
 			var longitude = Number(observationList[j].locationObservation.mLongitude);
 			var pointChild = new L.LatLng(latitude, longitude);
+			// Make marker for observation
 			var marker = L.marker(pointChild, {icon: blueIcon});
+			if (observationList[j].typeOfObservation == 'Sau') {
+				marker.bindPopup("<b>Observasjon "+observationList[j].observationId+
+				"</b><br><b>Type:</b> "+observationList[j].typeOfObservation+
+				"<br><b>Antall:</b> "+observationList[j].sheepCount);
+			} else {
+				marker.bindPopup("<b>Observasjon "+observationList[j].observationId+
+				"</b><br><b>Type:</b> "+observationList[j].typeOfObservation+
+				"<br><b>Detaljer:</b> "+observationList[j].details);
+			}
 			mapItems.push(marker);
-			marker.bindPopup("<b>Observasjon "+observationList[j].observationId+"</b><br>Type: "+observationList[j].typeOfObservation+
-				"<br>Antall: "+observationList[j].sheepCount);
 			// Add polyline between observation point and observation
 			var line = new L.Polyline([pointParent,pointChild], {
 			    color: polylineColor,
 			    weight: 3,
 			    opacity: 0.4,
 			    smoothFactor: 1
-			}).bindPopup('<b>Punkt '+jsonObservationPoints[i].pointId+' kl. '+date.format("HH:MM")+'</b><br>Observasjon '+
-			observationList[j].observationId+'<br><b>Sau sett:</b> '+observationList[j].sheepCount+'<br><b>Type:</b> '+
-			observationList[j].typeOfObservation);
+			}).bindPopup('<b>Punkt '+jsonObservationPoints[i].pointId+' kl. '+date.format("HH:MM")+
+				'</b><br><i>Observasjon '+observationList[j].observationId+
+				'</i><br><b>Type:</b> '+observationList[j].typeOfObservation+
+				'<br><b>Sau sett:</b> '+observationList[j].sheepCount);
 			mapItems.push(line);
 		}
 	}
@@ -179,9 +195,13 @@ function showHikeOnMap(hike) {
 	    weight: 4,
 	    opacity: 0.9,
 	    smoothFactor: 1
-	}).bindPopup('<b>'+title+'</b><br>'+dateStart.format("dd/mm/yyyy HH:MM")+'-'+dateEnd.format('HH:MM')+'<br><b>Gjeter:</b> '+
-	name+'<br><b>Deltakere:</b> '+participants+'<br><b>Antall sau sett:</b> '+totalSheepCount+'<br><b>Vær:</b> '+weather+
-	'<br><b>Distanse:</b> '+distance+'<br><b>Detaljer:</b> '+description);
+	}).bindPopup('<b>'+title+'</b><br>'+dateStart.format("dd/mm/yyyy HH:MM")+'-'+dateEnd.format('HH:MM')+
+		'<br><b>Gjeter:</b> '+name+
+		'<br><b>Deltakere:</b> '+participants+
+		'<br><b>Antall sau sett:</b> '+totalSheepCount+
+		'<br><b>Vær:</b> '+weather+
+		'<br><b>Distanse:</b> '+distance+
+		'<br><b>Detaljer:</b> '+description);
 	mapItems.push(trackPolyline);
 	mymap.fitBounds(trackPolyline.getBounds());
 
