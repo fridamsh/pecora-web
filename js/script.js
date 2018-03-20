@@ -201,7 +201,7 @@ function showHikeOnMap(hike) {
 		'<br><b>Deltakere:</b> '+participants+
 		'<br><b>Antall sau sett:</b> '+totalSheepCount+
 		'<br><b>Vær:</b> '+weather+
-		'<br><b>Distanse:</b> '+distance+
+		'<br><b>Distanse:</b> '+distance+' km'+
 		'<br><b>Detaljer:</b> '+description);
 	mapItems.push(trackPolyline);
 	mymap.fitBounds(trackPolyline.getBounds());
