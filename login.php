@@ -6,6 +6,7 @@
 <html>
 <head>
 	<title>Pecora Web</title>
+	<link rel="icon" type="image/png" href="img/ic_pecora_3.png">
 	<link rel="stylesheet" type="text/css" href="css/style.css">
 </head>
 <body>
