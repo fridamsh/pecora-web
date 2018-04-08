@@ -1,7 +1,21 @@
 var mymap = L.map('map').setView([63.416957, 10.402937], 13);
-L.tileLayer('https://opencache.statkart.no/gatekeeper/gk/gk.open_gmaps?layers=topo2&zoom={z}&x={x}&y={y}', {
+L.tileLayer('http://opencache.statkart.no/gatekeeper/gk/gk.open_gmaps?layers=norges_grunnkart&zoom={z}&x={x}&y={y}', {
     attribution: '<a href="https://www.kartverket.no/">Kartverket</a> | <a href="http://www.ingridogsondre.no" target="_blank">Frida</a>'
 }).addTo(mymap);
+
+/*var kartverket_topo2 = 'https://opencache.statkart.no/gatekeeper/gk/gk.open_gmaps?layers=topo2&zoom={z}&x={x}&y={y}',
+	kartverket_grunnkart = 'http://opencache.statkart.no/gatekeeper/gk/gk.open_gmaps?layers=norges_grunnkart&zoom={z}&x={x}&y={y}',
+	kartverket_attribution = '<a href="https://www.kartverket.no/">Kartverket</a> | <a href="http://www.ingridogsondre.no" target="_blank">Frida</a>';
+
+var topo2 = L.tileLayer(kartverket_topo2, {attribution: kartverket_attribution}),
+    grunnkart   = L.tileLayer(kartverket_grunnkart, {attribution: kartverket_attribution});
+
+var mymap = L.map('map', {
+    center: [63.416957, 10.402937],
+    zoom: 13,
+    layers: [topo2, grunnkart]
+});*/
+
 // Layergroup for adding hike layers
 var layer = L.layerGroup().addTo(mymap);
 // Sidebar plugin

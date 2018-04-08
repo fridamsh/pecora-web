@@ -15,6 +15,7 @@
             <div class="row">
                 <div class="col-lg-8 col-md-6 col-sm-2 col-xs-2 mx-auto">
                     <h2>Pecora</h2>
+                    <!--<hr style="width:100px; margin-left: 46.5%; margin-top: 10px;">-->
 					<form class="login-form" action="includes/login.inc.php" method="POST">
 						<input type="text" name="uid" placeholder="Username">
 						<input type="password" name="pwd" placeholder="Password">
