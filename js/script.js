@@ -438,7 +438,8 @@ $('#reportBtn').on('click', function() {
 				var doc = new jsPDF();
 				doc.setFontSize(12);
 				var dateNow = new Date();
-				doc.text(195, 15, dateNow.format("dd/mm/yyyy"), null, null, 'right');
+				var dateNowFormatted = dateNow.format("dd/mm/yyyy");
+				doc.text(195, 15, dateNowFormatted, null, null, 'right');
 				doc.text(15, 15, name+' '+lastname);
 				doc.setFontSize(20);
 				doc.text(105, 25, 'Pecora', null, null, 'center');
@@ -469,9 +470,11 @@ $('#reportBtn').on('click', function() {
 						+'Ingen data', 15, lineUnit);
 					lineUnit+=10;
 		    	}
+		    	//Last ned PDF
+		    	var dateNowFormattedDash = dateNow.format("dd-mm-yyyy");
+		    	var pdfName = 'report-'+dateNowFormattedDash+'.pdf';
+				doc.save(pdfName);
 			}
-			//Last ned PDF
-			doc.save('report.pdf');
 		},
 		error: function(xhr, ajaxOptions, thrownError){
 			alert("AJAX Error");
