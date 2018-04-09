@@ -414,3 +414,61 @@ $('#resetBtn').on('click', function() {
 	//Get the most recent hikes
 	getMostRecentHikes();
 });
+
+$('#reportBtn').on('click', function() {
+	// Default export is a4 paper, portrait, using milimeters for units
+	$.ajax({
+		url: "includes/get-report-information.inc.php",
+		type: "GET",
+		success: function (data) {
+			//Parse data
+			var obj = JSON.parse(data);
+			if (obj.error == 'error') {
+				alert("Ingen turer å vise i rapport");
+			} else {
+				//Create PDF
+				var doc = new jsPDF();
+				doc.setFontSize(12);
+				var dateNow = new Date();
+				doc.text(200, 15, dateNow.format("dd/mm/yyyy"), null, null, 'right');
+				doc.setFontSize(22);
+				doc.text(105, 25, 'Pecora', null, null, 'center');
+				doc.setFontType('bold');
+				doc.text(105, 37, 'Rapport', null, null, 'center');
+				doc.setFontSize(14);
+				doc.setFontType('italic');
+				doc.text('Dato og tid - Antall sau sett - Manglende sau', 20, 52);
+				doc.setFontType('normal');
+				var lineUnit = 63;
+				//Loop through hikes list
+				alert(obj.length);
+				for (var i = 0; i < obj.length; i++) {
+					var startdate = obj[i].startdate;
+					var enddate = obj[i].enddate;
+			    	var observationPoints = obj[i].observationPoints;
+			    	//Decode observation points
+					var jsonObservationPoints = JSON.parse(observationPoints);
+					var totalSheepCount=0;
+					for (var j = 0; j < jsonObservationPoints.length; j++) {
+						totalSheepCount+=Number(jsonObservationPoints[j].sheepCount);
+					}
+			    	var dateStart = new Date(Number(startdate));
+			    	var dateEnd = new Date(Number(enddate));
+					//Add text to PDF
+					doc.text(dateStart.format("dd/mm/yyyy HH:MM")+'-'+dateEnd.format("HH:MM")+' - '+totalSheepCount+' sau - '
+						+'Ingen data', 20, lineUnit);
+					lineUnit+=10;
+		    	}
+			}
+			//Last ned PDF
+			doc.save('report.pdf');
+
+		},
+		error: function(xhr, ajaxOptions, thrownError){
+			alert("AJAX Error");
+		},
+		timeout: 15000 //timeout of the ajax call
+	});
+});
+
+

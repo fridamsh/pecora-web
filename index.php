@@ -51,6 +51,9 @@
 	<link rel="stylesheet" href="css/L.Control.Locate.min.css" />
 	<script src="js/L.Control.Locate.min.js" charset="utf-8"></script>
 
+	<!-- jsPDF -->
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.3.5/jspdf.debug.js" integrity="sha384-CchuzHs077vGtfhGYl9Qtc7Vx64rXBXdIAZIPbItbNyWIRTdG0oYAqki3Ry13Yzu" crossorigin="anonymous"></script>
+
 	<style>
 		body {
             padding: 0;
@@ -233,11 +236,12 @@
 	            <div class="sidebar-pane" id="settings">
 	                <h1 class="sidebar-header">Innstillinger<span class="sidebar-close"><i class="fa fa-caret-left"></i></span></h1>
 
-	                <h3 style="margin-bottom: 10px;">Hva kan være her?</h3>
-	                <ul>
-	                	<li>Forskjellig type kart?</li>
-	                	<li>Generere rapport?</li>
-	                </ul>
+	                <h3 style="margin-bottom: 10px;">Rapport</h3>
+	                <p>Her kan du laste ned en rapport over turene du har gått. 
+	                	<br>Rapporten inneholder en liste av turer med informasjon som dato og klokkeslett, samt antall sau sett på turen og om noen lam manglet.</p>
+	                <span class="logout-div">
+					    <button id="reportBtn" type="submit" class="btn btn-primary">Generer rapport</button>
+					</span>
 	            </div>
 	        </div>
 	    </div>
