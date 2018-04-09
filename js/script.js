@@ -23,6 +23,8 @@ var sidebar = L.control.sidebar('sidebar').addTo(mymap);
 // Geolocate plugin
 L.control.locate().addTo(mymap);
 
+var name = '', lastname = '', email = '', username = '';
+
 $.ajax({
 	url: "includes/get-user.inc.php",
 	type: "GET",
@@ -32,6 +34,10 @@ $.ajax({
 		if (user.error == 'error') {
 			alert("Ingen turer å vise");
 		} else {
+			name = user.name;
+			lastname = user.lastname;
+			email = user.email;
+			username = user.username;
 			//Make html to append to profile page
 			var newHTML = '<p><b>Navn </b>' + user.name + ' ' + user.lastname + '</p>' + '<p><b>Email </b>' + user.email + '</p>' + 
 			'<p><b>Brukernavn </b>' + user.username + '</p>';
@@ -430,14 +436,15 @@ $('#reportBtn').on('click', function() {
 				var doc = new jsPDF();
 				doc.setFontSize(12);
 				var dateNow = new Date();
-				doc.text(200, 15, dateNow.format("dd/mm/yyyy"), null, null, 'right');
+				doc.text(195, 15, dateNow.format("dd/mm/yyyy"), null, null, 'right');
+				doc.text(15, 15, name+' '+lastname);
 				doc.setFontSize(22);
 				doc.text(105, 25, 'Pecora', null, null, 'center');
 				doc.setFontType('bold');
 				doc.text(105, 37, 'Rapport', null, null, 'center');
 				doc.setFontSize(14);
 				doc.setFontType('italic');
-				doc.text('Dato og tid - Antall sau sett - Manglende sau', 20, 52);
+				doc.text('Dato og tid - Antall sau sett - Manglende sau', 15, 52);
 				doc.setFontType('normal');
 				var lineUnit = 63;
 				//Loop through hikes list
@@ -455,7 +462,7 @@ $('#reportBtn').on('click', function() {
 			    	var dateEnd = new Date(Number(enddate));
 					//Add text to PDF
 					doc.text(dateStart.format("dd/mm/yyyy HH:MM")+'-'+dateEnd.format("HH:MM")+' - '+totalSheepCount+' sau - '
-						+'Ingen data', 20, lineUnit);
+						+'Ingen data', 15, lineUnit);
 					lineUnit+=10;
 		    	}
 			}
