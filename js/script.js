@@ -441,7 +441,6 @@ $('#reportBtn').on('click', function() {
 				doc.setFontType('normal');
 				var lineUnit = 63;
 				//Loop through hikes list
-				alert(obj.length);
 				for (var i = 0; i < obj.length; i++) {
 					var startdate = obj[i].startdate;
 					var enddate = obj[i].enddate;
