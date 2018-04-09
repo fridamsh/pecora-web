@@ -176,7 +176,8 @@
 	                <ul>
 	                	<li>Se din profil</li>
 	                	<li>Se alle dine synkroniserte turer</li>
-	                	<li><i>Kommer flere funksjoner</i></li>
+	                	<li>Se turer innenfor et tidsintervall</li>
+	                	<li>Generere oppsummeringsrapport for dine turer</li>
 	                </ul>
 	            </div>
 
