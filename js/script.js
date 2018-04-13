@@ -150,7 +150,8 @@ function showHikeOnMap(hike) {
 		var pointParent = new L.LatLng(latitude, longitude);
 		var date = new Date(Number(jsonObservationPoints[i].timeOfObservationPoint));
 		var observationList = jsonObservationPoints[i].observationList;
-		var marker = L.marker(pointParent, {icon: redIcon});
+		var marker = L.marker(pointParent, {icon: observationPointIcon});
+		marker.setOpacity(0.5);
 		if (observationList.length == 1) {
 			marker.bindPopup("<b>Punkt "+jsonObservationPoints[i].pointId+" kl. "+date.format("HH:MM")+
 			"</b><br><i>"+observationList.length+" observasjon</i>"+
@@ -261,6 +262,12 @@ var redIcon = L.icon({
     shadowUrl: 'img/marker-shadow.png',
     shadowSize: [41, 41],
     shadowAnchor: [13, 40]
+});
+var observationPointIcon = L.icon({
+    iconUrl: 'img/circle.png',
+    iconSize: [10, 10],
+    iconAnchor: [5, 4],
+    popupAnchor: [0, 0]
 });
 var blueIcon = L.icon({
     iconUrl: 'img/marker-icon-2x-blue.png',
