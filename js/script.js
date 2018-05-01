@@ -216,7 +216,8 @@ function showHikeOnMap(hike) {
 	    color: polylineColor,
 	    weight: 4,
 	    opacity: 0.9,
-	    smoothFactor: 1
+	    smoothFactor: 1,
+	    renderer: L.canvas()
 	}).bindPopup('<b>'+title+'</b><br>'+dateStart.format("dd/mm/yyyy HH:MM")+'-'+dateEnd.format('HH:MM')+
 		'<br><b>Gjeter:</b> '+name+
 		'<br><b>Deltakere:</b> '+participants+
@@ -443,26 +444,30 @@ $('#reportBtn').on('click', function() {
 			} else {
 				//Create PDF
 				var doc = new jsPDF();
+				pageHeight= doc.internal.pageSize.height;
+
 				doc.setFontSize(12);
 				var dateNow = new Date();
 				var dateNowFormatted = dateNow.format("dd/mm/yyyy");
 				doc.text(195, 15, dateNowFormatted, null, null, 'right');
-				doc.text(15, 15, name+' '+lastname);
 				doc.setFontSize(20);
 				doc.text(105, 25, 'Pecora', null, null, 'center');
 				doc.setFontSize(22);
 				doc.setFontType('bold');
-				doc.text(105, 37, 'Rapport', null, null, 'center');
+				doc.text(105, 37, 'Generert Rapport', null, null, 'center');
 				doc.addImage(imgData, 'PNG', 95, 44, 20, 20);
-				doc.setFontSize(14);
-				doc.setFontType('italic');
-				doc.text('Dato og tid - Antall sau sett - Manglende sau', 15, 75);
+
 				doc.setFontType('normal');
-				var lineUnit = 86;
+				doc.setFontSize(14);
+				doc.text('Beitelag: Ukjent', 15, 75);
+				doc.text('Beiteår: '+dateNow.format('yyyy'), 15, 85);
+				doc.text('Tilsynsperson: '+name+' '+lastname, 15, 95);
+				var lineUnit = 110;
 				//Loop through hikes list
 				for (var i = 0; i < obj.length; i++) {
 					var startdate = obj[i].startdate;
 					var enddate = obj[i].enddate;
+					var description = obj[i].description;
 			    	var observationPoints = obj[i].observationPoints;
 			    	//Decode observation points
 					var jsonObservationPoints = JSON.parse(observationPoints);
@@ -473,14 +478,25 @@ $('#reportBtn').on('click', function() {
 			    	var dateStart = new Date(Number(startdate));
 			    	var dateEnd = new Date(Number(enddate));
 					//Add text to PDF
-					doc.text(dateStart.format("dd/mm/yyyy HH:MM")+'-'+dateEnd.format("HH:MM")+' - '+totalSheepCount+' sau - '
-						+'Ingen data', 15, lineUnit);
+					// Before adding new content
+					if (lineUnit+30 >= pageHeight) {
+						doc.addPage();
+						lineUnit = 20 // Restart height position 
+					}
+					doc.setFontType('bold');
+					doc.text('Dato: '+dateStart.format("dd/mm/yyyy")+'		Beskrivelse: '+description, 15, lineUnit);
 					lineUnit+=10;
+					doc.setFontType('normal');
+					doc.text('Antall sau sett: '+totalSheepCount, 15, lineUnit);
+					lineUnit+=20;
 		    	}
 		    	//Last ned PDF
 		    	var dateNowFormattedDash = dateNow.format("dd-mm-yyyy");
 		    	var pdfName = 'report-'+dateNowFormattedDash+'.pdf';
 				doc.save(pdfName);
+
+				//cover.className = 'active';
+                //leafletImage(mymap, downloadMap);
 			}
 		},
 		error: function(xhr, ajaxOptions, thrownError){
@@ -489,5 +505,16 @@ $('#reportBtn').on('click', function() {
 		timeout: 15000 //timeout of the ajax call
 	});
 });
+
+function downloadMap(err, canvas) {
+    var imgData = canvas.toDataURL("image/svg+xml", 1.0);
+    var dimensions = mymap.getSize();
+    
+    var pdf = new jsPDF('l', 'pt', 'letter');
+    pdf.addImage(imgData, 'PNG', 10, 10, dimensions.x * 0.5, dimensions.y * 0.5);
+    
+    //cover.className = '';
+    pdf.save("download.pdf");
+};
 
 

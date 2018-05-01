@@ -54,6 +54,10 @@
 	<!-- jsPDF -->
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.3.5/jspdf.debug.js" integrity="sha384-CchuzHs077vGtfhGYl9Qtc7Vx64rXBXdIAZIPbItbNyWIRTdG0oYAqki3Ry13Yzu" crossorigin="anonymous"></script>
 
+	<script>L_PREFER_CANVAS = true</script>
+	<!-- <script src='//api.tiles.mapbox.com/mapbox.js/plugins/leaflet-image/v0.0.4/leaflet-image.js'></script> -->
+	<script src='js/leaflet-image.js'></script>
+
 	<style>
 		body {
             padding: 0;
@@ -243,6 +247,7 @@
 	                <span class="logout-div">
 					    <button id="reportBtn" type="submit" class="btn btn-primary">Generer rapport</button>
 					</span>
+					<p id="p-img"></p>
 	            </div>
 	        </div>
 	    </div>
