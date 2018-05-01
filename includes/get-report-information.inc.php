@@ -16,6 +16,7 @@ if ($resultCheck > 0) {
 		$hike = new Hike();
 		$hike->set_startdate($row['startdate']);
 		$hike->set_enddate($row['enddate']);
+		$hike->set_description($row['description']);
 		$hike->set_observationPoints($row['observationPoints']);
 		array_push($hikes, $hike);
 	}	
