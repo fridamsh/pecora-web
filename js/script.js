@@ -216,8 +216,7 @@ function showHikeOnMap(hike) {
 	    color: polylineColor,
 	    weight: 4,
 	    opacity: 0.9,
-	    smoothFactor: 1,
-	    renderer: L.canvas()
+	    smoothFactor: 1
 	}).bindPopup('<b>'+title+'</b><br>'+dateStart.format("dd/mm/yyyy HH:MM")+'-'+dateEnd.format('HH:MM')+
 		'<br><b>Gjeter:</b> '+name+
 		'<br><b>Deltakere:</b> '+participants+
