@@ -1,8 +1,14 @@
 <?php
 	session_start();
 	include_once 'includes/dbh.inc.php';
+	
+	if (isset($_SESSION['u_id'])) {
+		$userId = $_SESSION['u_id'];
+	} else {
+		header("Location: login.php");
+		exit();
+	}
 ?>
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -143,14 +149,6 @@
 	</style>
 </head>
 <body>
-	<?php
-		if (isset($_SESSION['u_id'])) {
-			$userId = $_SESSION['u_id'];
-		} else {
-			header("Location: login.php");
-			exit();
-		}
-	?>
 	<div id="mapwrap">
 		<div id="sidebar" class="sidebar collapsed">
 	        <!-- Nav tabs -->
